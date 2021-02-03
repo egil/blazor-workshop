@@ -1,29 +1,23 @@
 ﻿@page "/"
-@inject HttpClient HttpClient
+@inject IPizzaApi Api
 
 <div class="main">
     <ul class="pizza-cards">
-        @if (specials != null)
+        @if (specials is not null)
         {
             @foreach (var special in specials)
             {
-                <li style="background-image: url('@special.ImageUrl')">
-                    <div class="pizza-info">
-                        <span class="title">@special.Name</span>
-                        @special.Description
-                        <span class="price">@special.GetFormattedBasePrice()</span>
-                    </div>
-                </li>
+                <PizzaCard Pizza="special" />
             }
         }
     </ul>
 </div>
 
 @code {
-    List<PizzaSpecial> specials;
+    IReadOnlyList<PizzaSpecial> specials;
 
     protected override async Task OnInitializedAsync()
     {
-        specials = await HttpClient.GetFromJsonAsync<List<PizzaSpecial>>("specials");
+        specials = await Api.GetPizzaSpecialsAsync();
     }
 }

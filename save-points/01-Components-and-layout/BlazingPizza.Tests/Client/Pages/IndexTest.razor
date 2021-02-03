@@ -1,0 +1,16 @@
+﻿@inherits TestContext
+@code {
+    [Theory, AutoData]
+    public void Index_Renders_PizzaSpecials_Returned_From_Api(List<PizzaSpecial> pizzaSpecials)
+    {
+        Services.AddSingleton<IPizzaApi>(_ => new FakePizzaApi(pizzaSpecials));
+
+        var cut = Render(@<Index />);
+
+        var pizzaCards = cut.FindComponents<PizzaCard>();
+        pizzaCards.Count.Should().Be(pizzaSpecials.Count);
+        pizzaCards.Select(x => x.Instance.Pizza)
+            .Should()
+            .BeEquivalentTo(pizzaSpecials);
+    }
+}

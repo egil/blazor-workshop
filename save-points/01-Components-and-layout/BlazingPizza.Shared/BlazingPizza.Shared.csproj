@@ -5,8 +5,4 @@
     <RootNamespace>BlazingPizza</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BlazingPizza.ComponentsLibrary\BlazingPizza.ComponentsLibrary.csproj" />
-  </ItemGroup>
-
 </Project>

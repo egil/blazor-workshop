@@ -1,0 +1,16 @@
+﻿@inherits TestContext
+@code {
+    [Theory, AutoData]
+    public void PizzaCard_Correctly_Lists_The_PizzaSpecial_Passed_To_It(PizzaSpecial pizza)
+    {
+        var cut = Render(@<PizzaCard Pizza="pizza" />);
+
+        cut.MarkupMatches(@<li style="background-image: url('@pizza.ImageUrl')">
+                                <div class="pizza-info">
+                                    <span class="title">@pizza.Name</span>
+                                    @pizza.Description
+                                    <span class="price">@pizza.GetFormattedBasePrice()</span>
+                                </div>
+                            </li>);
+    }
+}

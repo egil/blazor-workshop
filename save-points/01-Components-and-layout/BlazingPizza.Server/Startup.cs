@@ -22,7 +22,6 @@ namespace BlazingPizza.Server
             services.AddControllersWithViews();
             services.AddRazorPages();
 
-
             services.AddDbContext<PizzaStoreContext>(options => 
                 options.UseSqlite("Data Source=pizza.db"));
 
