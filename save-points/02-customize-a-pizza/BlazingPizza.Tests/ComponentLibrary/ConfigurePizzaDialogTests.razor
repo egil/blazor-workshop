@@ -1,0 +1,25 @@
+﻿@inherits TestContext
+@code {
+    [Theory, AutoData]
+    public void Dialog_Correctly_Lists_The_Pizza_Passed_To_It(Pizza pizza)
+    {
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
+        
+        cut.MarkupMatches(@<div class="dialog-container">
+                               <div class="dialog">
+                                   <div class="dialog-title">
+                                       <h2>@pizza.Special.Name</h2>
+                                       @pizza.Special.Description
+                                   </div>
+                                   <form class="dialog-body"></form>
+                                   <div class="dialog-buttons">
+                                       <button class="btn btn-secondary mr-auto">Cancel</button>
+                                       <span class="mr-center">
+                                           Price: <span class="price">@(pizza.GetFormattedTotalPrice())</span>
+                                       </span>
+                                       <button class="btn btn-success ml-auto">Order ></button>
+                                   </div>
+                               </div>
+                           </div>);
+    }
+}

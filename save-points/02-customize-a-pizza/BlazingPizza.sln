@@ -10,6 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazingPizza.Shared", "Blaz
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazingPizza.ComponentsLibrary", "BlazingPizza.ComponentsLibrary\BlazingPizza.ComponentsLibrary.csproj", "{0C421DC9-9F9A-4C97-9BC5-D959E8840864}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazingPizza.Tests", "BlazingPizza.Tests\BlazingPizza.Tests.csproj", "{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,6 +70,18 @@ Global
 		{0C421DC9-9F9A-4C97-9BC5-D959E8840864}.Release|x64.Build.0 = Release|Any CPU
 		{0C421DC9-9F9A-4C97-9BC5-D959E8840864}.Release|x86.ActiveCfg = Release|Any CPU
 		{0C421DC9-9F9A-4C97-9BC5-D959E8840864}.Release|x86.Build.0 = Release|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Debug|x64.Build.0 = Debug|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Debug|x86.Build.0 = Debug|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Release|x64.ActiveCfg = Release|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Release|x64.Build.0 = Release|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Release|x86.ActiveCfg = Release|Any CPU
+		{ADAB36B2-F667-4DBA-A35A-F6A6164840FC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,67 +1,31 @@
 ﻿@page "/"
-@inject HttpClient HttpClient
+@inject IPizzaApi Api
 
 <div class="main">
     <ul class="pizza-cards">
-        @if (specials != null)
+        @if (specials is not null)
         {
             @foreach (var special in specials)
             {
-                <li @onclick="@(() => ShowConfigurePizzaDialog(special))" style="background-image: url('@special.ImageUrl')">
-                    <div class="pizza-info">
-                        <span class="title">@special.Name</span>
-                        @special.Description
-                        <span class="price">@special.GetFormattedBasePrice()</span>
-                    </div>
-                </li>
+                <PizzaCard Special="special" OnClick="ShowConfigurePizzaDialog" />
             }
         }
     </ul>
 </div>
 
-<div class="sidebar">
-    @if (order.Pizzas.Any())
-    {
-        <div class="order-contents">
-            <h2>Your order</h2>
-
-            @foreach (var configuredPizza in order.Pizzas)
-            {
-                <ConfiguredPizzaItem Pizza="configuredPizza" OnRemoved="@(() => RemoveConfiguredPizza(configuredPizza))" />
-            }
-        </div>
-    }
-    else
-    {
-        <div class="empty-cart">Choose a pizza<br>to get started</div>
-    }
-
-    <div class="order-total @(order.Pizzas.Any() ? "" : "hidden")">
-        Total:
-        <span class="total-price">@order.GetFormattedTotalPrice()</span>
-        <button class="btn btn-warning" disabled="@(order.Pizzas.Count == 0)" @onclick="PlaceOrder">
-            Order >
-        </button>
-    </div>
-</div>
-
 @if (showingConfigureDialog)
 {
-    <ConfigurePizzaDialog
-        Pizza="configuringPizza"
-        OnCancel="CancelConfigurePizzaDialog"
-        OnConfirm="ConfirmConfigurePizzaDialog" />
+    <ConfigurePizzaDialog Pizza="configuringPizza" />
 }
 
 @code {
-    List<PizzaSpecial> specials;
+    IReadOnlyList<PizzaSpecial> specials;
     Pizza configuringPizza;
     bool showingConfigureDialog;
-    Order order = new Order();
 
     protected override async Task OnInitializedAsync()
     {
-        specials = await HttpClient.GetFromJsonAsync<List<PizzaSpecial>>("specials");
+        specials = await Api.GetPizzaSpecialsAsync();
     }
 
     void ShowConfigurePizzaDialog(PizzaSpecial special)
@@ -75,30 +39,5 @@
         };
 
         showingConfigureDialog = true;
-    }
-
-    void CancelConfigurePizzaDialog()
-    {
-        configuringPizza = null;
-        showingConfigureDialog = false;
-    }
-
-    void ConfirmConfigurePizzaDialog()
-    {
-        order.Pizzas.Add(configuringPizza);
-        configuringPizza = null;
-
-        showingConfigureDialog = false;
-    }
-
-    void RemoveConfiguredPizza(Pizza pizza)
-    {
-        order.Pizzas.Remove(pizza);
-    }
-
-    async Task PlaceOrder()
-    {
-        await HttpClient.PostAsJsonAsync("orders", order);
-        order = new Order();
     }
 }
