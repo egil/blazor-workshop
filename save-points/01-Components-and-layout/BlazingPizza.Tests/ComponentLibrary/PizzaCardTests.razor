@@ -3,7 +3,7 @@
     [Theory, AutoData]
     public void PizzaCard_Correctly_Lists_The_PizzaSpecial_Passed_To_It(PizzaSpecial pizza)
     {
-        var cut = Render(@<PizzaCard Pizza="pizza" />);
+        var cut = Render(@<PizzaCard Special="pizza" />);
 
         cut.MarkupMatches(@<li style="background-image: url('@pizza.ImageUrl')">
                                 <div class="pizza-info">
@@ -13,4 +13,15 @@
                                 </div>
                             </li>);
     }
-}
+    
+    [Theory, AutoData]
+    public void PizzaCard_Raises_Clicked_Event_When_Clicked_By_User(PizzaSpecial inputPizza)
+    {
+        PizzaSpecial? clickedPizza = null;
+        var cut = Render(@<PizzaCard Special="inputPizza" OnClick="pizza => clickedPizza = pizza" />);     
+
+        cut.Find("li").Click();
+
+        clickedPizza.Should().Be(inputPizza);
+    }
+}        
