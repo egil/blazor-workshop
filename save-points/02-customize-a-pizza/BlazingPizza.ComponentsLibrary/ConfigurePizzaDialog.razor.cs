@@ -40,7 +40,6 @@ namespace BlazingPizza.ComponentsLibrary
 
         void RemoveTopping(Topping topping)
         {
-            Pizza.Toppings.RemoveAll(pt => pt.Topping == topping);
         }
     }
 }
