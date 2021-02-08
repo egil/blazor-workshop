@@ -1,25 +1,194 @@
 ﻿@inherits TestContext
 @code {
+    private FakePizzaApi Api { get; }
+
+    public ConfigurePizzaDialogTests()
+    {
+        Api = new FakePizzaApi();
+        Services.AddSingleton<IPizzaApi>(Api);
+    }
+
     [Theory, AutoData]
     public void Dialog_Correctly_Lists_The_Pizza_Passed_To_It(Pizza pizza)
     {
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
         
-        cut.MarkupMatches(@<div class="dialog-container">
-                               <div class="dialog">
-                                   <div class="dialog-title">
-                                       <h2>@pizza.Special.Name</h2>
-                                       @pizza.Special.Description
-                                   </div>
-                                   <form class="dialog-body"></form>
-                                   <div class="dialog-buttons">
-                                       <button class="btn btn-secondary mr-auto">Cancel</button>
-                                       <span class="mr-center">
-                                           Price: <span class="price">@(pizza.GetFormattedTotalPrice())</span>
-                                       </span>
-                                       <button class="btn btn-success ml-auto">Order ></button>
-                                   </div>
-                               </div>
-                           </div>);
+        cut.MarkupMatches(
+            @<div class="dialog-container">
+                 <div class="dialog">
+                     <div class="dialog-title">
+                        <h2>@pizza.Special.Name</h2>
+                        @pizza.Special.Description
+                     </div>
+                     <form diff:ignore></form>
+                     <div class="dialog-buttons">
+                         <button class="btn btn-secondary mr-auto">Cancel</button>
+                         <span class="mr-center">
+                             Price: <span class="price">@pizza.GetFormattedTotalPrice()</span>
+                         </span>
+                         <button class="btn btn-success ml-auto">Order ></button>
+                     </div>
+                 </div>
+             </div>);
+    }
+
+    [Theory, AutoData]
+    public void Dialog_Correctly_Shows_The_Size_Input_Slider(Pizza pizza)
+    {
+        pizza.Size = Pizza.DefaultSize;
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
+
+        cut.Find(".size-group").MarkupMatches(
+            @<div class="size-group">
+                 <label>Size:</label>
+                 <input type="range" 
+                     min="@Pizza.MinimumSize" 
+                     max="@Pizza.MaximumSize" 
+                     step="1" 
+                     value=@pizza.Size />
+                 <span class="size-label">
+                     @(pizza.Size)" (£@(pizza.GetFormattedTotalPrice()))
+                 </span>
+             </div>);
+    }
+
+    [Theory, AutoData]
+    public void Dialog_Updates_PizzaSize_When_Size_Slider_Is_Dragged(Pizza pizza)
+    {
+        pizza.Size = Pizza.DefaultSize;
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
+
+        cut.Find("form input").Input(Pizza.MinimumSize.ToString());
+
+        pizza.Size.Should().Be(Pizza.MinimumSize);
+    }
+
+    [Theory, AutoData]
+    public void Dialog_Toppings_Shows_As_Loading_When_ToppingsEndpoint_Has_Not_Returned_Yet(
+        Pizza pizza)
+    {
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
+
+        cut.Find(".toppings-group").MarkupMatches(
+            @<div class="toppings-group">
+                <div>
+                    <label>Extra Toppings:</label>
+                    <select class="custom-select" disabled>
+                        <option>(loading...)</option>
+                    </select>
+                </div>
+                <div class="toppings" diff:ignore></div>
+            </div>);
+    }
+
+    [Theory, AutoData]
+    public void Dialog_Displays_Empty_Toppings_List_When_None_Are_Returned_From_Server(
+        Pizza pizza)
+    {
+        Api.ToppingTask.SetResult(Array.Empty<Topping>());
+
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
+
+        cut.Find(".toppings-group").MarkupMatches(
+            @<div class="toppings-group">
+                <div>
+                    <label>Extra Toppings:</label>
+                    <select class="custom-select">
+                        <option value="-1" disabled selected>(select)</option>
+                    </select>
+                </div>
+                <div class="toppings" diff:ignore></div>
+            </div>);
+    }
+
+    [Theory, AutoData]
+    public void Dialog_Displays_Toppings_In_Dropdown_When_Loaded_From_API(
+        Pizza pizza,
+        List<Topping> toppings)
+    {
+        Api.ToppingTask.SetResult(toppings);
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
+
+        cut.Find(".toppings-group select").MarkupMatches(
+            @<select class="custom-select" >
+                <option value="-1" disabled selected>(select)</option>
+                @for (var i = 0; i < toppings.Count; i++)
+                {
+                    <option value="@i">@toppings[i].Name - (£@(toppings[i].GetFormattedPrice()))</option>
+                }
+            </select>);
+    }
+
+    [Theory, AutoData]
+    public void Dialog_When_Topping_Is_Selected_It_Is_Added_To_Pizzas_Toppings_List(
+        Pizza pizza,
+        List<Topping> toppings)
+    {
+        pizza.Toppings.Clear();
+        Api.ToppingTask.SetResult(toppings);
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
+
+        cut.Find(".toppings-group select").Change("1");
+        
+        pizza.Toppings
+            .Should()
+            .Contain(x => x.Topping == toppings[1]);
+    }
+
+    [Theory, AutoData]
+    public void Toppings_Can_Only_Be_Added_Once_To_A_Pizza(
+        Pizza pizza,
+        List<Topping> toppings)
+    {
+        pizza.Toppings.Clear();
+        Api.ToppingTask.SetResult(toppings);
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
+
+        cut.Find(".toppings-group select").Change("0");
+        cut.Find(".toppings-group select").Change("0");
+
+        pizza.Toppings
+            .Should()
+            .Contain(x => x.Topping == toppings[0]);
+        pizza.Toppings.Count
+            .Should()
+            .Be(1);
+    }
+
+    [Theory, AutoData]
+    public void Toppings_Added_To_Pizza_Are_Displayed_In_Toppings_List(
+        Pizza pizza)
+    {
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
+
+        var toppingDivs = cut.FindAll(".toppings .topping");
+
+        toppingDivs.Count.Should().Be(pizza.Toppings.Count);
+    }
+
+    [Theory, AutoData]
+    public void No_More_Than_Six_Toppings_Can_Be_Added(
+        Pizza pizza,
+        List<Topping> toppings1,
+        List<Topping> toppings2)
+    {        
+        pizza.Toppings.Clear();
+        var sixToppings = toppings1.Concat(toppings2).ToArray();
+        Api.ToppingTask.SetResult(sixToppings);
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
+        var toppingsDropDown = cut.Find(".toppings-group select");
+        
+        toppingsDropDown.Change("0");
+        toppingsDropDown.Change("1");
+        toppingsDropDown.Change("2");
+        toppingsDropDown.Change("3");
+        toppingsDropDown.Change("4");
+        toppingsDropDown.Change("5");
+
+        cut.Find(".toppings-group > div").MarkupMatches(
+            @<div>
+                <label>Extra Toppings:</label>
+                <div>(maximum reached)</div>
+            </div>);
     }
 }

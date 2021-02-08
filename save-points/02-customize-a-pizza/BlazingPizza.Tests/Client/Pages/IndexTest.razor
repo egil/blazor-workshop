@@ -2,12 +2,12 @@
 @code {
 
     [Theory, AutoData]
-    public void Index_Renders_PizzaSpecials_Returned_From_Api(List<PizzaSpecial> pizzaSpecials)
+    public void Index_Renders_PizzaSpecials_Returned_From_Api(List<PizzaSpecial> pizzaSpecials, FakePizzaApi api)
     {
-        Services.AddSingleton<IPizzaApi>(_ => new FakePizzaApi(pizzaSpecials));
+        api.PizzaSpecialTask.SetResult(pizzaSpecials);
+        Services.AddSingleton<IPizzaApi>(api);
 
-        var cut = Render(@<Index />
-    );
+        var cut = Render(@<Index />);
 
         var pizzaCards = cut.FindComponents<PizzaCard>();
         pizzaCards.Count.Should().Be(pizzaSpecials.Count);
@@ -17,9 +17,10 @@
     }
 
     [Theory, AutoData]
-    public void Index_When_PizzaCard_Is_Clicked_ConfigurePizzaDialog_Is_Shown(List<PizzaSpecial> pizzaSpecials)
+    public void Index_When_PizzaCard_Is_Clicked_ConfigurePizzaDialog_Is_Shown(List<PizzaSpecial> pizzaSpecials, FakePizzaApi api)
     {
-        Services.AddSingleton<IPizzaApi>(_ => new FakePizzaApi(pizzaSpecials));
+        api.PizzaSpecialTask.SetResult(pizzaSpecials);
+        Services.AddSingleton<IPizzaApi>(api);
         var cut = Render(@<Index />);
         var pizzaCardToClick = cut.FindComponent<PizzaCard>();
         

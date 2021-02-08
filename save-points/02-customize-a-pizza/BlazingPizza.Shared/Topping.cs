@@ -1,6 +1,6 @@
 ﻿namespace BlazingPizza
 {
-    public class Topping
+    public record Topping
     {
         public int Id { get; set; }
 
