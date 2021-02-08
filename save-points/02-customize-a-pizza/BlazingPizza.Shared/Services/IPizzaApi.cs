@@ -9,5 +9,6 @@ namespace BlazingPizza.Client.Services
     public interface IPizzaApi
     {
         Task<IReadOnlyList<PizzaSpecial>> GetPizzaSpecialsAsync();
+        Task<IReadOnlyList<Topping>> GetToppingsAsync();
     }
 }

@@ -14,5 +14,8 @@ namespace BlazingPizza.Client.Services
 
         public async Task<IReadOnlyList<PizzaSpecial>> GetPizzaSpecialsAsync()
             => await httpClient.GetFromJsonAsync<List<PizzaSpecial>>("specials");
+
+        public async Task<IReadOnlyList<Topping>> GetToppingsAsync()
+            => await httpClient.GetFromJsonAsync<List<Topping>>("toppings");
     }
 }
