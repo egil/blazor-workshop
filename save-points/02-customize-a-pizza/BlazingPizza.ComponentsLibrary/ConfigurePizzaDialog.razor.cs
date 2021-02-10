@@ -16,6 +16,10 @@ namespace BlazingPizza.ComponentsLibrary
 
         [Parameter] public Pizza Pizza { get; set; }
 
+        [Parameter] public EventCallback OnConfirm { get; set; }
+
+        [Parameter] public EventCallback OnCancel { get; set; }
+
         protected async override Task OnInitializedAsync()
         {
             toppings = await Api.GetToppingsAsync();
@@ -40,6 +44,7 @@ namespace BlazingPizza.ComponentsLibrary
 
         void RemoveTopping(Topping topping)
         {
+            Pizza.Toppings.RemoveAll(pt => pt.Topping == topping);
         }
     }
 }

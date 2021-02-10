@@ -43,7 +43,7 @@
                     @foreach (var topping in Pizza.Toppings)
                     {
                         <div class="topping">
-                            @topping.Topping.Name
+                            <span class="topping-name">@topping.Topping.Name</span>
                             <span class="topping-price">@topping.Topping.GetFormattedPrice()</span>
                             <button type="button" class="delete-topping" @onclick="@(() => RemoveTopping(topping.Topping))">x</button>
                         </div>
@@ -52,11 +52,11 @@
             </div>
         </form>
         <div class="dialog-buttons">
-            <button class="btn mr-auto btn-secondary">Cancel</button>
+            <button class="btn mr-auto btn-secondary btn-cancel" @onclick="OnCancel">Cancel</button>
             <span class="mr-center">
                 Price: <span class="price">@(Pizza.GetFormattedTotalPrice())</span>
             </span>
-            <button class="btn btn-success ml-auto">Order ></button>
+            <button class="btn btn-success ml-auto btn-confirm" @onclick="OnConfirm">Order ></button>
         </div>
     </div>
 </div>

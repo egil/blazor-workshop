@@ -12,10 +12,16 @@
         }
     </ul>
 </div>
+<div class="sidebar">
+    
+</div>
 
 @if (showingConfigureDialog)
 {
-    <ConfigurePizzaDialog Pizza="configuringPizza" />
+    <ConfigurePizzaDialog 
+        Pizza="configuringPizza" 
+        OnCancel="CancelConfigurePizzaDialog"
+        OnConfirm="ConfirmConfigurePizzaDialog"/>
 }
 
 @code {
@@ -39,5 +45,17 @@
         };
 
         showingConfigureDialog = true;
+    }
+
+    void CancelConfigurePizzaDialog()
+    {
+        showingConfigureDialog = false;
+        configuringPizza = null;
+    }
+
+    void ConfirmConfigurePizzaDialog()
+    {
+        showingConfigureDialog = false;
+        configuringPizza = null;
     }
 }

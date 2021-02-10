@@ -1,0 +1,58 @@
+﻿@inherits TestContext
+@code {
+    [Theory, AutoData]
+    public void Empty_Cart_Message_Displayed_When_Order_Is_Empty(
+        [NoAutoProperties] Order order)
+    {
+        var cut = Render(@<OrderInformation Order=order />);
+
+        cut.Find(".empty-cart")
+            .MarkupMatches(@<div class="empty-cart">Choose a pizza<br>to get started</div>);
+    }
+
+    [Theory, AutoData]
+    public void Each_Pizza_In_An_Order_Is_Rendered_Using_An_ConfiguredPizzaItem(Order order)
+    {
+        var cut = Render(@<OrderInformation Order=order />);
+
+        var pizzaItemComponents = cut.FindComponents<ConfiguredPizzaItem>();                
+        pizzaItemComponents.Select(x => x.Instance.Pizza)
+            .Should()
+            .BeEquivalentTo(order.Pizzas);
+    }
+
+    [Theory, AutoData]
+    public void When_No_Pizzas_Are_Added_To_Order_OrderTotal_Is_Correctly_Displayed(
+        [NoAutoProperties] Order order)
+    {
+        var cut = Render(@<OrderInformation Order=order />);
+
+        cut.Find(".order-total").MarkupMatches(
+            @<div class="order-total hidden">
+                Total:
+                <span class="total-price">@order.GetFormattedTotalPrice()</span>
+                <button class="btn btn-warning" disabled>
+                    Order >
+                </button>
+            </div>);
+    }
+
+    [Theory, AutoData]
+    public void When_Pizzas_Are_Added_To_Order_OrderTotal_Is_Correctly_Displayed(Order order)
+    {
+        var cut = Render(@<OrderInformation Order=order />);
+
+        cut.Find(".order-total").MarkupMatches(
+            @<div class="order-total">
+                Total:
+                <span class="total-price">@order.GetFormattedTotalPrice()</span>
+                <button class="btn btn-warning">
+                    Order >
+                </button>
+            </div>);
+    }
+
+    // TODO:
+    // test that when order button is clicked, the OnSubmit is raised.
+    // test when a pizzas OnRemoved is clicked, the event callback is passed the removed pizza.
+}

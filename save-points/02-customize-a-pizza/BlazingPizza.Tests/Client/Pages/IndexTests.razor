@@ -1,0 +1,64 @@
+﻿@inherits TestContext
+@code {
+    private FakePizzaApi Api { get; }
+
+    public IndexTests()
+    {
+        Api = new FakePizzaApi();
+        Services.AddSingleton<IPizzaApi>(Api);
+    }
+
+    [Theory, AutoData]
+    public void Index_Renders_PizzaSpecials_Returned_From_Api(List<PizzaSpecial> pizzaSpecials)
+    {
+        Api.PizzaSpecialTask.SetResult(pizzaSpecials);
+
+        var cut = Render(@<Index />);
+
+        var pizzaCards = cut.FindComponents<PizzaCard>();
+        pizzaCards.Count.Should().Be(pizzaSpecials.Count);
+        pizzaCards.Select(x => x.Instance.Special)
+            .Should()
+            .BeEquivalentTo(pizzaSpecials);
+    }
+
+    [Theory, AutoData]
+    public void Index_When_PizzaCard_Is_Clicked_ConfigurePizzaDialog_Is_Shown(List<PizzaSpecial> pizzaSpecials)
+    {
+        Api.PizzaSpecialTask.SetResult(pizzaSpecials);
+        var cut = Render(@<Index />);
+        var pizzaCardToClick = cut.FindComponent<PizzaCard>();
+        
+        pizzaCardToClick.Find("li").Click();
+
+        var dialog = cut.FindComponent<ConfigurePizzaDialog>();
+        dialog.Instance.Pizza
+            .Should()
+            .BeEquivalentTo(new Pizza()
+            {
+                Special = pizzaCardToClick.Instance.Special,
+                SpecialId = pizzaCardToClick.Instance.Special.Id,
+                Size = Pizza.DefaultSize,
+                Toppings = new List<PizzaTopping>(),
+            });
+    }
+
+    [Theory]
+    [InlineAutoData(".btn-cancel")]
+    [InlineAutoData(".btn-confirm")]
+    public void When_ConfigurePizzaDialog_OnCancelEvent_Is_Raised_The_Dialog_Is_Hidden(
+        string buttonToClickCssSelector,
+        List<PizzaSpecial> pizzaSpecials)
+    {
+        Api.PizzaSpecialTask.SetResult(pizzaSpecials);
+        var cut = Render(@<Index />);
+        cut.Find(".pizza-cards li:first-child").Click(); // pop up a ConfigurePizzaDialog
+
+        cut.Find($".dialog-container {buttonToClickCssSelector}").Click();
+        
+        cut.FindAll(".dialog-container")
+            .Count
+            .Should()
+            .Be(0);
+    }
+}

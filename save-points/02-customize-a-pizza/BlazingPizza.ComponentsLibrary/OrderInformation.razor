@@ -1,0 +1,26 @@
+﻿@if (Order.Pizzas.Any())
+{
+    <div class="order-contents">
+        <h2>Your order</h2>
+        @foreach (var configuredPizza in Order.Pizzas)
+        {
+            <ConfiguredPizzaItem Pizza="configuredPizza" />
+        }
+    </div>
+}
+else
+{
+    <div class="empty-cart">Choose a pizza<br>to get started</div>
+}
+
+<div class="order-total @(Order.Pizzas.Any() ? "" : "hidden")">
+    Total:
+    <span class="total-price">@Order.GetFormattedTotalPrice()</span>
+    <button class="btn btn-warning" disabled="@(!Order.Pizzas.Any())">
+        Order >
+    </button>
+</div>
+
+@code {
+    [Parameter] public Order Order { get; set; }
+} 
