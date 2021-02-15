@@ -52,7 +52,30 @@
             </div>);
     }
 
-    // TODO:
-    // test that when order button is clicked, the OnSubmit is raised.
-    // test when a pizzas OnRemoved is clicked, the event callback is passed the removed pizza.
+    [Theory, AutoData]
+    public void When_PizzaRemoveButton_Is_Clicked_Pizza_Is_Removed_From_Order(Order order)
+    {
+        var cut = Render(@<OrderInformation Order=order />);
+        var configuredPizza = cut.FindComponent<ConfiguredPizzaItem>();
+        var pizzaToRemove = configuredPizza.Instance.Pizza;
+
+        configuredPizza.Find("a").Click();
+        
+        order.Pizzas
+            .Should()
+            .NotContain(pizzaToRemove);
+    }
+
+    [Theory, AutoData]
+    public void When_OrderButton_Is_Clicked_The_PlaceOrderClicked_Event_Is_Raised(Order order)
+    {
+        var placeOrderButtonClicked = false;
+        var cut = Render(@<OrderInformation Order=order PlaceOrderClicked="() => placeOrderButtonClicked = true" />);
+
+        cut.Find(".order-total button").Click();
+
+        placeOrderButtonClicked
+            .Should()
+            .BeTrue();
+    }
 }

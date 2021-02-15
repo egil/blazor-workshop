@@ -1,6 +1,4 @@
 ﻿@page "/"
-@inject IPizzaApi Api
-
 <div class="main">
     <ul class="pizza-cards">
         @if (specials is not null)
@@ -13,7 +11,10 @@
     </ul>
 </div>
 <div class="sidebar">
-    
+    <OrderInformation 
+        Order="order"
+        PlaceOrderClicked="PlaceOrder"
+        />
 </div>
 
 @if (showingConfigureDialog)
@@ -22,40 +23,4 @@
         Pizza="configuringPizza" 
         OnCancel="CancelConfigurePizzaDialog"
         OnConfirm="ConfirmConfigurePizzaDialog"/>
-}
-
-@code {
-    IReadOnlyList<PizzaSpecial> specials;
-    Pizza configuringPizza;
-    bool showingConfigureDialog;
-
-    protected override async Task OnInitializedAsync()
-    {
-        specials = await Api.GetPizzaSpecialsAsync();
-    }
-
-    void ShowConfigurePizzaDialog(PizzaSpecial special)
-    {
-        configuringPizza = new Pizza()
-        {
-            Special = special,
-            SpecialId = special.Id,
-            Size = Pizza.DefaultSize,
-            Toppings = new List<PizzaTopping>(),
-        };
-
-        showingConfigureDialog = true;
-    }
-
-    void CancelConfigurePizzaDialog()
-    {
-        showingConfigureDialog = false;
-        configuringPizza = null;
-    }
-
-    void ConfirmConfigurePizzaDialog()
-    {
-        showingConfigureDialog = false;
-        configuringPizza = null;
-    }
 }

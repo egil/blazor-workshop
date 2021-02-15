@@ -10,5 +10,7 @@ namespace BlazingPizza.Client.Services
     {
         Task<IReadOnlyList<PizzaSpecial>> GetPizzaSpecialsAsync();
         Task<IReadOnlyList<Topping>> GetToppingsAsync();
+        Task<IReadOnlyList<OrderWithStatus>> GetOrdersWithStatusAsync();
+        Task PlaceOrderAsync(Order order);
     }
 }
