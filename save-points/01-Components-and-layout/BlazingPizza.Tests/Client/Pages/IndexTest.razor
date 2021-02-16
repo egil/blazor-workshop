@@ -6,7 +6,8 @@
     {
         Services.AddSingleton<IPizzaApi>(_ => new FakePizzaApi(pizzaSpecials));
 
-        var cut = Render(@<Index />);
+        var cut = Render(@<Index />
+    );
 
         var pizzaCards = cut.FindComponents<PizzaCard>();
         pizzaCards.Count.Should().Be(pizzaSpecials.Count);
@@ -14,4 +15,26 @@
             .Should()
             .BeEquivalentTo(pizzaSpecials);
     }
+
+    [Theory, AutoData]
+    public void Index_When_PizzaCard_Is_Clicked_ConfigurePizzaDialog_Is_Shown(List<PizzaSpecial> pizzaSpecials)
+    {
+        Services.AddSingleton<IPizzaApi>(_ => new FakePizzaApi(pizzaSpecials));
+        var cut = Render(@<Index />);
+        var pizzaCardToClick = cut.FindComponent<PizzaCard>();
+        
+        pizzaCardToClick.Find("li").Click();
+
+        var dialog = cut.FindComponent<ConfigurePizzaDialog>();
+        dialog.Instance.Pizza
+            .Should()
+            .BeEquivalentTo(new Pizza()
+            {
+                Special = pizzaCardToClick.Instance.Special,
+                SpecialId = pizzaCardToClick.Instance.Special.Id,
+                Size = Pizza.DefaultSize,
+                Toppings = new List<PizzaTopping>(),
+            });
+    }
+
 }
