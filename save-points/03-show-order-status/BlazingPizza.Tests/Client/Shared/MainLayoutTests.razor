@@ -1,0 +1,17 @@
+﻿@inherits TestContext
+@code {
+    [Fact]
+    public void MyOrdersNavigationItem_Is_Marked_As_Active_When_Viewing_MyOrdersPage()
+    {
+        var navigationManager = new FakeNavigationManager();
+        Services.AddSingleton<NavigationManager>(navigationManager);
+        var cut = Render<MainLayout>(@<MainLayout />);
+
+        cut.InvokeAsync(() => navigationManager.NavigateTo("myorders"));
+
+        cut.Find("a[href=myorders]")
+            .ClassList
+            .Should()
+            .Contain("active");
+    }
+}
