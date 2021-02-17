@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BlazingPizza.Client.Services
@@ -22,6 +24,25 @@ namespace BlazingPizza.Client.Services
             => await httpClient.GetFromJsonAsync<List<OrderWithStatus>>("orders");
 
         public async Task PlaceOrderAsync(Order order)
-            => await httpClient.PostAsJsonAsync("orders", order);
+        {
+            var response = await httpClient.PostAsJsonAsync("orders", order);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async IAsyncEnumerable<OrderWithStatus> GetOrderUpdatesById(
+            int orderId, 
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var orderWithStatus = await httpClient.GetFromJsonAsync<OrderWithStatus>(
+                    $"orders/{orderId}", 
+                    cancellationToken);
+
+                yield return orderWithStatus;
+
+                await Task.Delay(4000, cancellationToken);
+            }
+        }
     }
 }
