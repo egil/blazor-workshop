@@ -1,0 +1,49 @@
+﻿@inherits TestContext
+@code
+{
+    private FakePizzaApi Api { get; }
+
+    public MyOrdersTests()
+    {
+        Api = new FakePizzaApi();
+        Services.AddSingleton<IPizzaApi>(Api);
+    }
+
+    [Fact]
+    public void When_PizzaAPI_Hasnt_Returned_OrdersWithStatus_A_Loading_Message_Is_Displayed()
+    {
+        var cut = Render(@<MyOrders/>);
+        
+        cut.MarkupMatches(@<div class="main">Loading...</div>);
+    }
+
+    [Fact]
+    public void When_PizzaAPI_Returns_Empty_OrdersWithStatus_A_NoOrders_Message_Is_Displayed()
+    {
+        Api.CompleteOrderWithStatusRequest();
+        
+        var cut = Render(@<MyOrders/>);
+        
+        cut.MarkupMatches(
+            @<div class="main">
+                <h2>No orders placed</h2>    
+                <a class="btn btn-success" href="">Order some pizza</a>
+            </div>
+    );
+    }
+
+    [Theory, AutoData]
+    public void When_PizzaAPI_Returns_OrdersWithStatus_The_OrdersTable_Component_Is_Rendered_With_The_Orders(
+        IReadOnlyList<OrderWithStatus> orders)
+    {        
+        Api.OrderWithStatusTask.SetResult(orders);        
+        
+        var cut = Render(@<MyOrders/>);
+
+        cut.FindComponent<OrdersTable>()
+            .Instance
+            .Orders
+            .Should()
+            .BeEquivalentTo(orders);
+    }
+}

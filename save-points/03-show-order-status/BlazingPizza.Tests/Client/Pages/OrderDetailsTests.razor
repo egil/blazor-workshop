@@ -1,0 +1,80 @@
+﻿@inherits TestContext
+@code
+{
+    private FakePizzaApi Api { get; }
+
+    public OrderDetailsTests()
+    {
+        Api = new FakePizzaApi();
+        Services.AddSingleton<IPizzaApi>(Api);
+    }
+
+    [Theory, AutoData]
+    public void When_API_Hasnt_Returned_A_OrderWithDetail_The_Loading_Message_Is_Displayed(
+        int orderId)
+    {
+        var cut = Render(@<OrderDetails OrderId="orderId" />);
+
+        cut.MarkupMatches(@<div class="main">Loading...</div>);
+    }
+
+    [Theory, AutoData]
+    public void When_API_Returns_An_InvalidOrder_An_Invalid_Order_Message_Is_Displayed(
+        int orderId)
+    {
+        Api.OrderUpdateTask.SetException(new ArgumentException("Invalid order id"));
+        var cut = Render(@<OrderDetails OrderId=orderId />);
+
+        cut.MarkupMatches(
+            @<div class="main">
+                <h2>Nope</h2>
+                <p>Sorry, this order could not be loaded.</p>    
+             </div>);
+    }
+
+    [Theory, AutoData]
+    public void When_API_Returns_An_Order_A_OrderTracker_Is_Displayed(
+        OrderWithStatus orderWithStatus)
+    {
+        Api.OrderUpdateTask.SetResult(orderWithStatus);
+
+        var cut = Render(@<OrderDetails OrderId=orderWithStatus.Order.OrderId />);
+
+        cut.MarkupMatches(
+            @<div class="main">
+                <div class="track-order">
+                    <div class="track-order-title">
+                        <h2>
+                            Order placed @orderWithStatus.Order.CreatedTime.ToLongDateString()
+                        </h2>
+                        <p class="ml-auto mb-0">
+                            Status: <strong>@orderWithStatus.StatusText</strong>
+                        </p>
+                    </div>
+                    <div class="track-order-body">
+                        TODO: show more details
+                    </div>
+                </div> 
+             </div>);
+    }
+
+    [Theory, AutoData]
+    public void When_API_Returns_Updates_To_Order_A_OrderTracker_Is_Updated(
+        Order order,
+        string newStatusText)
+    {
+        var orderWithStatus = OrderWithStatus.FromOrder(order);
+        Api.OrderUpdateTask.SetResult(orderWithStatus);
+        var cut = Render(@<OrderDetails OrderId=orderWithStatus.Order.OrderId />);
+        var statusElement = cut.Find(".track-order p");
+
+        statusElement.TextContent.MarkupMatches($"Status: {orderWithStatus.StatusText}");
+
+        // act
+        orderWithStatus.StatusText = newStatusText;
+        Api.OrderUpdateTask.SetResult(orderWithStatus);
+
+        // assert
+        cut.WaitForAssertion(() => statusElement.TextContent.MarkupMatches($"Status: {newStatusText}"));
+    }
+}

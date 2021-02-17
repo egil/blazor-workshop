@@ -1,5 +1,27 @@
 ﻿@page "/myorders"
+@inject IPizzaApi API
 
 <div class="main">
-    My orders will go here
+    @if (ordersWithStatus is null)
+    {
+        <text>Loading...</text>
+    }
+    else if (!ordersWithStatus.Any())
+    {
+        <h2>No orders placed</h2>
+        <a class="btn btn-success" href="">Order some pizza</a>
+    }
+    else
+    {
+        <OrdersTable Orders="ordersWithStatus" />
+    }
 </div>
+
+@code{
+    IReadOnlyList<OrderWithStatus> ordersWithStatus;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        ordersWithStatus = await API.GetOrdersWithStatusAsync();
+    }
+}

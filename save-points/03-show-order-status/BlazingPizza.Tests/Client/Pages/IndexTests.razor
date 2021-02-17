@@ -51,7 +51,8 @@
         List<PizzaSpecial> pizzaSpecials)
     {
         Api.PizzaSpecialTask.SetResult(pizzaSpecials);
-        var cut = Render(@<Index />);
+        var cut = Render(@<Index />
+    );
         cut.Find(".pizza-cards li:first-child").Click(); // pop up a ConfigurePizzaDialog
 
         cut.Find($".dialog-container {buttonToClickCssSelector}").Click();
@@ -63,7 +64,7 @@
     }
 
     [Theory, AutoData]
-    public async Task When_PlaceOrderButton_Is_Clicked_The_PlaceOrderApi_Endpoint_Is_Called_With_Order(
+    public void When_PlaceOrderButton_Is_Clicked_The_PlaceOrderApi_Endpoint_Is_Called_With_Order(
         List<PizzaSpecial> pizzaSpecials)
     {
         // arrange
@@ -75,9 +76,8 @@
         PlaceOrder();
 
         // assertion
-        var orders = await Api.GetOrdersWithStatusAsync();
-        orders.Should().HaveCount(1);
-        orders[0].Order.Pizzas[0].Special
+        Api.Orders.Should().HaveCount(1);
+        Api.Orders[0].Pizzas[0].Special
             .Should()
             .BeEquivalentTo(pizzaSpecials[0]);
 
