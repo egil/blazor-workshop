@@ -1,4 +1,4 @@
-# Blazor - app building workshop
+# Blazor - app building workshop - using TDD
 
 Welcome to the Test-Driven-Development version of Blazor app building workshop! 
 
