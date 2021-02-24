@@ -5,8 +5,7 @@
 
     public MyOrdersTests()
     {
-        Api = new FakePizzaApi();
-        Services.AddSingleton<IPizzaApi>(Api);
+        Api = this.AddFakePizzaApi();
     }
 
     [Fact]

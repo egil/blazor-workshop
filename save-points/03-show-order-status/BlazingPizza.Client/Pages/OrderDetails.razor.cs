@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Components;
 
 namespace BlazingPizza.Client.Pages
 {
-    public partial class OrderDetails : ComponentBase
+    public partial class OrderDetails : ComponentBase, IDisposable
     {
+        private readonly CancellationTokenSource pollingCancellationToken = new CancellationTokenSource();
         private OrderWithStatus? orderWithStatus;
         private bool invalidOrder;
-        
+
         [Inject] private IPizzaApi API { get; set; }
 
         [Parameter] public int OrderId { get; set; }
@@ -24,7 +25,7 @@ namespace BlazingPizza.Client.Pages
         {
             try
             {
-                await foreach (var ows in API.GetOrderUpdatesById(OrderId))
+                await foreach (var ows in API.GetOrderUpdatesById(OrderId, pollingCancellationToken.Token))
                 {
                     orderWithStatus = ows;
 
@@ -36,12 +37,17 @@ namespace BlazingPizza.Client.Pages
                     }
                 }
             }
-            catch (Exception ex)
+            catch (OperationCanceledException) { }
+            catch
             {
                 invalidOrder = true;
-                Console.Error.WriteLine(ex.Message);
                 StateHasChanged();
             }
+        }
+
+        public void Dispose()
+        {
+            pollingCancellationToken.Cancel();
         }
     }
 }

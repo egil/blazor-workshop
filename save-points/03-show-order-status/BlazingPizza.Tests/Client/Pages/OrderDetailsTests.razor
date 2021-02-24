@@ -5,8 +5,7 @@
 
     public OrderDetailsTests()
     {
-        Api = new FakePizzaApi();
-        Services.AddSingleton<IPizzaApi>(Api);
+        Api = this.AddFakePizzaApi();
     }
 
     [Fact]
@@ -50,8 +49,9 @@
                             Status: <strong>@orderWithStatus.StatusText</strong>
                         </p>
                     </div>
-                    <div class="track-order-body">
-                        TODO: show more details
+                    <div class="track-order-body" >
+                        <div class="track-order-details" diff:ignore>                    
+                        </div>
                     </div>
                 </div> 
              </div>);

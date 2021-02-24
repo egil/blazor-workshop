@@ -4,8 +4,7 @@
 
     public MainLayoutTests()
     {
-        Services.AddSingleton<NavigationManager, FakeNavigationManager>();
-        navigationManager = Services.GetService<NavigationManager>();        
+        navigationManager = this.AddFakeNavigationManager();
     }
 
     [Fact]

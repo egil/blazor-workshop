@@ -20,7 +20,7 @@ namespace BlazingPizza
         private readonly List<OrderWithStatus> orderWithStatuses = new List<OrderWithStatus>();
 
         public FakePizzaApi(IEnumerable<Topping>? toppings = null,
-                               IEnumerable<PizzaSpecial>? pizzaSpecials = null)
+                            IEnumerable<PizzaSpecial>? pizzaSpecials = null)
         {
             var fixture = new Fixture();
             this.toppings = toppings?.ToList() 

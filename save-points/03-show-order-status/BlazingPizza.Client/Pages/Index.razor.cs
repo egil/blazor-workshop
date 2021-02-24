@@ -16,6 +16,7 @@ namespace BlazingPizza.Client.Pages
         private Order order = new Order();
 
         [Inject] private IPizzaApi Api { get; set; }
+        [Inject] NavigationManager NavigationManager { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -50,8 +51,9 @@ namespace BlazingPizza.Client.Pages
 
         private async Task PlaceOrder()
         {
-            await Api.PlaceOrderAsync(order);
+            var orderId = await Api.PlaceOrderAsync(order);
             order = new Order();
+            NavigationManager.NavigateTo($"myorders/{orderId}");
         }
     }
 }

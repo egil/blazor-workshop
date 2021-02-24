@@ -4,8 +4,7 @@
 
     public ConfigurePizzaDialogTests()
     {
-        Api = new FakePizzaApi();
-        Services.AddSingleton<IPizzaApi>(Api);
+        Api = this.AddFakePizzaApi();
     }
 
     [Theory, AutoData]

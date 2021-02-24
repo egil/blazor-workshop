@@ -1,23 +1,24 @@
-﻿using Bunit.Rendering;
+﻿using Bunit;
+using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
 
 namespace BlazingPizza
 {
     public class FakeNavigationManager : NavigationManager
     {
-        private readonly ITestRenderer renderer;
+        private readonly TestContext context;
 
-        public FakeNavigationManager(ITestRenderer renderer)
+        public FakeNavigationManager(TestContext context)
         {
+            this.context = context;            
             Initialize("http://localhost/", "http://localhost/");
-            this.renderer = renderer;
         }
 
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
             Uri = ToAbsoluteUri(uri).ToString();
 
-            renderer.Dispatcher.InvokeAsync(
+            context.Renderer.Dispatcher.InvokeAsync(
                 () => NotifyLocationChanged(isInterceptedLink: false));
         }
     }
