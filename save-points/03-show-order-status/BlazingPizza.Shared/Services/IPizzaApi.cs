@@ -12,7 +12,7 @@ namespace BlazingPizza.Client.Services
         Task<IReadOnlyList<PizzaSpecial>> GetPizzaSpecialsAsync();
         Task<IReadOnlyList<Topping>> GetToppingsAsync();
         Task<IReadOnlyList<OrderWithStatus>> GetOrdersWithStatusAsync();
-        Task PlaceOrderAsync(Order order);
-        IAsyncEnumerable<OrderWithStatus> GetOrderUpdatesById(int orderId, CancellationToken cancellationToken);
+        Task<int> PlaceOrderAsync(Order order);
+        IAsyncEnumerable<OrderWithStatus> GetOrderUpdatesById(int orderId, CancellationToken cancellationToken = default);
     }
 }

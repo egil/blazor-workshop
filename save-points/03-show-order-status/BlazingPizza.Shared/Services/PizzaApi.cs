@@ -23,24 +23,22 @@ namespace BlazingPizza.Client.Services
         public async Task<IReadOnlyList<OrderWithStatus>> GetOrdersWithStatusAsync()
             => await httpClient.GetFromJsonAsync<List<OrderWithStatus>>("orders");
 
-        public async Task PlaceOrderAsync(Order order)
+        public async Task<int> PlaceOrderAsync(Order order)
         {
             var response = await httpClient.PostAsJsonAsync("orders", order);
             response.EnsureSuccessStatusCode();
+            var orderId = await response.Content.ReadFromJsonAsync<int>();
+            return orderId;
         }
 
         public async IAsyncEnumerable<OrderWithStatus> GetOrderUpdatesById(
-            int orderId, 
-            [EnumeratorCancellation] CancellationToken cancellationToken)
+            int orderId,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var orderWithStatus = await httpClient.GetFromJsonAsync<OrderWithStatus>(
-                    $"orders/{orderId}", 
-                    cancellationToken);
-
+                var orderWithStatus = await httpClient.GetFromJsonAsync<OrderWithStatus>($"orders/{orderId}", cancellationToken);
                 yield return orderWithStatus;
-
                 await Task.Delay(4000, cancellationToken);
             }
         }

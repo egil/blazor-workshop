@@ -64,9 +64,10 @@
     }
 
     [Theory, AutoData]
-    public void Dialog_Toppings_Shows_As_Loading_When_ToppingsEndpoint_Has_Not_Returned_Yet(
-        Pizza pizza)
+    public void Dialog_Toppings_Shows_As_Loading_When_ToppingsEndpoint_Has_Not_Returned_Yet(Pizza pizza)
     {
+        Services.AddSingleton<IPizzaApi, LoadingForeverPizzaApi>();
+        
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
 
         cut.Find(".toppings-group").MarkupMatches(
@@ -82,10 +83,9 @@
     }
 
     [Theory, AutoData]
-    public void Dialog_Displays_Empty_Toppings_List_When_None_Are_Returned_From_Server(
-        Pizza pizza)
+    public void Dialog_Displays_Empty_Toppings_List_When_None_Are_Returned_From_Server(Pizza pizza)
     {
-        Api.ToppingTask.SetResult(Array.Empty<Topping>());
+        Services.AddSingleton<IPizzaApi>(new FakePizzaApi(toppings: Array.Empty<Topping>()));
 
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
 
@@ -102,11 +102,10 @@
     }
 
     [Theory, AutoData]
-    public void Dialog_Displays_Toppings_In_Dropdown_When_Loaded_From_API(
-        Pizza pizza,
-        List<Topping> toppings)
+    public async Task Dialog_Displays_Toppings_In_Dropdown_When_Loaded_From_API(Pizza pizza)
     {
-        Api.ToppingTask.SetResult(toppings);
+        var toppings = await Api.GetToppingsAsync();
+
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
 
         cut.Find(".toppings-group select").MarkupMatches(
@@ -120,12 +119,10 @@
     }
 
     [Theory, AutoData]
-    public void Dialog_When_Topping_Is_Selected_It_Is_Added_To_Pizzas_Toppings_List(
-        Pizza pizza,
-        List<Topping> toppings)
+    public async Task Dialog_When_Topping_Is_Selected_It_Is_Added_To_Pizzas_Toppings_List(Pizza pizza)
     {
+        var toppings = await Api.GetToppingsAsync();
         pizza.Toppings.Clear();
-        Api.ToppingTask.SetResult(toppings);
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
 
         cut.Find(".toppings-group select").Change("1");
@@ -136,12 +133,10 @@
     }
 
     [Theory, AutoData]
-    public void Toppings_Can_Only_Be_Added_Once_To_A_Pizza(
-        Pizza pizza,
-        List<Topping> toppings)
+    public async Task Toppings_Can_Only_Be_Added_Once_To_A_Pizza(Pizza pizza)
     {
         pizza.Toppings.Clear();
-        Api.ToppingTask.SetResult(toppings);
+        var toppings = await Api.GetToppingsAsync();
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
 
         cut.Find(".toppings-group select").Change("0");
@@ -167,14 +162,9 @@
     }
 
     [Theory, AutoData]
-    public void No_More_Than_Six_Toppings_Can_Be_Added(
-        Pizza pizza,
-        List<Topping> toppings1,
-        List<Topping> toppings2)
+    public void No_More_Than_Six_Toppings_Can_Be_Added(Pizza pizza)
     {        
         pizza.Toppings.Clear();
-        var sixToppings = toppings1.Concat(toppings2).ToArray();
-        Api.ToppingTask.SetResult(sixToppings);
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
         var toppingsDropDown = cut.Find(".toppings-group select");
         
@@ -189,8 +179,7 @@
             @<div>
                 <label>Extra Toppings:</label>
                 <div>(maximum reached)</div>
-            </div>
-    );
+            </div>);
     }
 
     [Theory, AutoData]

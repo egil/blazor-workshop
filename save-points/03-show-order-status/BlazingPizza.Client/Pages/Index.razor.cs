@@ -43,7 +43,7 @@ namespace BlazingPizza.Client.Pages
 
         private void ConfirmConfigurePizzaDialog()
         {
-            showingConfigureDialog = false;
+            showingConfigureDialog = false;            
             order.Pizzas.Add(configuringPizza);
             configuringPizza = null;
         }

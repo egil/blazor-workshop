@@ -1,63 +1,112 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoFixture;
 using BlazingPizza.Client.Services;
 
 namespace BlazingPizza
 {
     public class FakePizzaApi : IPizzaApi
     {
-        internal List<Order> Orders { get; } = new List<Order>();
+        private TaskCompletionSource<OrderWithStatus> orderStatusUpdated = new();
+        private int orderIdSequence = 0;
+        private readonly List<Topping> toppings;
+        private readonly List<PizzaSpecial> pizzaSpecials;
+        private readonly List<Order> orders = new List<Order>();
+        private readonly List<OrderWithStatus> orderWithStatuses = new List<OrderWithStatus>();
 
-        internal TaskCompletionSource<IReadOnlyList<OrderWithStatus>> OrderWithStatusTask { get; }
-            = new TaskCompletionSource<IReadOnlyList<OrderWithStatus>>();
-
-        internal TaskCompletionSource<OrderWithStatus> OrderUpdateTask { get; private set; }
-            = new TaskCompletionSource<OrderWithStatus>();
-
-        internal TaskCompletionSource<IReadOnlyList<PizzaSpecial>> PizzaSpecialTask { get; }
-            = new TaskCompletionSource<IReadOnlyList<PizzaSpecial>>();
-
-        internal TaskCompletionSource<IReadOnlyList<Topping>> ToppingTask { get; }
-            = new TaskCompletionSource<IReadOnlyList<Topping>>();
-
-        internal void CompleteOrderWithStatusRequest()
+        public FakePizzaApi(IEnumerable<Topping>? toppings = null,
+                               IEnumerable<PizzaSpecial>? pizzaSpecials = null)
         {
-            var result = Orders
-                .OrderByDescending(o => o.CreatedTime)
-                .Select(o => OrderWithStatus.FromOrder(o))
-                .ToList();
+            var fixture = new Fixture();
+            this.toppings = toppings?.ToList() 
+                ?? fixture.CreateMany<Topping>(10).ToList<Topping>();
+            this.pizzaSpecials = pizzaSpecials?.ToList() 
+                ?? fixture.CreateMany<PizzaSpecial>(20).ToList();
+        }
 
-            OrderWithStatusTask.SetResult(result);
+        public Task<IReadOnlyList<OrderWithStatus>> GetOrdersWithStatusAsync()
+        {
+            return Task.FromResult<IReadOnlyList<OrderWithStatus>>(orderWithStatuses);
+        }
+
+        public async IAsyncEnumerable<OrderWithStatus> GetOrderUpdatesById(int orderId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var order = orderWithStatuses.SingleOrDefault(x => x.Order.OrderId == orderId);
+
+            if (order is null)
+            {
+                throw new HttpRequestException("Invalid order id");
+            }
+
+            yield return order;
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var updatedOrder = await orderStatusUpdated.Task;
+                
+                if(updatedOrder.Order.OrderId == orderId)
+                {
+                    yield return updatedOrder;
+                }                
+            }
         }
 
         public Task<IReadOnlyList<PizzaSpecial>> GetPizzaSpecialsAsync()
-            => PizzaSpecialTask.Task;
-
-        public Task<IReadOnlyList<Topping>> GetToppingsAsync()
-            => ToppingTask.Task;
-
-        public Task<IReadOnlyList<OrderWithStatus>> GetOrdersWithStatusAsync()
-            => OrderWithStatusTask.Task;
-
-        public Task PlaceOrderAsync(Order order)
         {
-            Orders.Add(order);
-            return Task.CompletedTask;
+            return Task.FromResult<IReadOnlyList<PizzaSpecial>>(pizzaSpecials);
         }
 
-        public async IAsyncEnumerable<OrderWithStatus> GetOrderUpdatesById(int orderId, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public Task<IReadOnlyList<Topping>> GetToppingsAsync()
         {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var result = await OrderUpdateTask.Task;
-                OrderUpdateTask = new TaskCompletionSource<OrderWithStatus>();
+            return Task.FromResult<IReadOnlyList<Topping>>(toppings);
+        }
 
-                if (result.Order.OrderId == orderId)
-                    yield return result;
+        public Task<int> PlaceOrderAsync(Order order)
+        {
+            order.CreatedTime = DateTime.Now;
+            order.DeliveryLocation = new LatLong(51.5001, -0.1239);
+
+            // order.UserId = GetUserId();
+
+            var orderId = orderIdSequence++;
+            order.OrderId = orderId;
+
+            orders.Add(order);
+            UpdateStatusForOrder(order);
+
+            return Task.FromResult(order.OrderId);
+        }
+        
+        internal void SetOrderStatusAsDelivered(int orderId)
+        {
+            var order = orders.Single(x => x.OrderId == orderId);
+
+            order.CreatedTime = DateTime.Now
+                .Subtract(OrderWithStatus.PreparationDuration)
+                .Subtract(OrderWithStatus.DeliveryDuration);
+
+            UpdateStatusForOrder(order);
+        }
+
+        private void UpdateStatusForOrder(Order order)
+        {
+            var newStatus = OrderWithStatus.FromOrder(order);
+
+            var existing = orderWithStatuses.Find(x => x.Order.OrderId == newStatus.Order.OrderId);                        
+            if(existing is not null)
+            {
+                orderWithStatuses.Remove(existing);
             }
+            orderWithStatuses.Add(newStatus);
+
+            var existingOrderStatusUpdated = orderStatusUpdated;
+            orderStatusUpdated = new TaskCompletionSource<OrderWithStatus>();
+            existingOrderStatusUpdated.SetResult(newStatus);
         }
     }
 }

@@ -9,21 +9,20 @@
         Services.AddSingleton<IPizzaApi>(Api);
     }
 
-    [Theory, AutoData]
-    public void When_API_Hasnt_Returned_A_OrderWithDetail_The_Loading_Message_Is_Displayed(
-        int orderId)
+    [Fact]
+    public void When_API_Hasnt_Returned_A_OrderWithDetail_The_Loading_Message_Is_Displayed()
     {
-        var cut = Render(@<OrderDetails OrderId="orderId" />);
+        Services.AddSingleton<IPizzaApi, LoadingForeverPizzaApi>();
+
+        var cut = Render(@<OrderDetails OrderId="1234" />);
 
         cut.MarkupMatches(@<div class="main">Loading...</div>);
     }
 
-    [Theory, AutoData]
-    public void When_API_Returns_An_InvalidOrder_An_Invalid_Order_Message_Is_Displayed(
-        int orderId)
+    [Fact]
+    public void When_API_Returns_An_InvalidOrder_An_Invalid_Order_Message_Is_Displayed()
     {
-        Api.OrderUpdateTask.SetException(new ArgumentException("Invalid order id"));
-        var cut = Render(@<OrderDetails OrderId=orderId />);
+        var cut = Render(@<OrderDetails OrderId="1234" />);
 
         cut.MarkupMatches(
             @<div class="main">
@@ -33,12 +32,12 @@
     }
 
     [Theory, AutoData]
-    public void When_API_Returns_An_Order_A_OrderTracker_Is_Displayed(
-        OrderWithStatus orderWithStatus)
+    public async Task When_API_Returns_An_Order_A_OrderTracker_Is_Displayed(Order order)
     {
-        Api.OrderUpdateTask.SetResult(orderWithStatus);
+        var orderId = await Api.PlaceOrderAsync(order);
+        var orderWithStatus = await Api.GetOrderWithStatusById(orderId);
 
-        var cut = Render(@<OrderDetails OrderId=orderWithStatus.Order.OrderId />);
+        var cut = Render(@<OrderDetails OrderId=orderId />);
 
         cut.MarkupMatches(
             @<div class="main">
@@ -59,22 +58,18 @@
     }
 
     [Theory, AutoData]
-    public void When_API_Returns_Updates_To_Order_A_OrderTracker_Is_Updated(
-        Order order,
-        string newStatusText)
+    public async Task When_API_Returns_Updates_To_Order_The_OrderTracker_Is_Updated(Order newOrder)
     {
-        var orderWithStatus = OrderWithStatus.FromOrder(order);
-        Api.OrderUpdateTask.SetResult(orderWithStatus);
-        var cut = Render(@<OrderDetails OrderId=orderWithStatus.Order.OrderId />);
+        var orderId = await Api.PlaceOrderAsync(newOrder);
+        var cut = Render(@<OrderDetails OrderId=orderId />);
         var statusElement = cut.Find(".track-order p");
 
-        statusElement.TextContent.MarkupMatches($"Status: {orderWithStatus.StatusText}");
-
         // act
-        orderWithStatus.StatusText = newStatusText;
-        Api.OrderUpdateTask.SetResult(orderWithStatus);
+        Api.SetOrderStatusAsDelivered(orderId);
 
         // assert
-        cut.WaitForAssertion(() => statusElement.TextContent.MarkupMatches($"Status: {newStatusText}"));
+        //var orderStatus = await GetOrderWithStatusById(orderId);
+        cut.WaitForAssertion(() => statusElement.TextContent.MarkupMatches($"Status: Delivered"));
     }
+
 }

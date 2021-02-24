@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -11,10 +11,11 @@
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.15.0" />
     <PackageReference Include="AutoFixture.Xunit2" Version="4.15.0" />
-    <PackageReference Include="bunit.core" Version="1.0.0-preview-01" />
+    <!--<PackageReference Include="bunit.core" Version="1.0.0-preview-01" />
     <PackageReference Include="bunit.web" Version="1.0.0-preview-01" />
-    <PackageReference Include="bunit.xunit" Version="1.0.0-preview-01" />
+    <PackageReference Include="bunit.xunit" Version="1.0.0-preview-01" />-->
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -28,8 +29,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\bUnit\src\bunit.core\bunit.core.csproj" />
+    <ProjectReference Include="..\..\..\..\bUnit\src\bunit.web\bunit.web.csproj" />
+    <ProjectReference Include="..\..\..\..\bUnit\src\bunit.xunit\bunit.xunit.csproj" />
     <ProjectReference Include="..\BlazingPizza.Client\BlazingPizza.Client.csproj" />
     <ProjectReference Include="..\BlazingPizza.ComponentsLibrary\BlazingPizza.ComponentsLibrary.csproj" />
+    <ProjectReference Include="..\BlazingPizza.Server\BlazingPizza.Server.csproj" />
+    <ProjectReference Include="..\BlazingPizza.Shared\BlazingPizza.Shared.csproj" />    
   </ItemGroup>
 
 </Project>

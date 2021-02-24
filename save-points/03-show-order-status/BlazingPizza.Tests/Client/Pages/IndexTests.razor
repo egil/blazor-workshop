@@ -8,10 +8,10 @@
         Services.AddSingleton<IPizzaApi>(Api);
     }
 
-    [Theory, AutoData]
-    public void Index_Renders_PizzaSpecials_Returned_From_Api(List<PizzaSpecial> pizzaSpecials)
+    [Fact]
+    public async Task Index_Renders_PizzaSpecials_Returned_From_Api()
     {
-        Api.PizzaSpecialTask.SetResult(pizzaSpecials);
+        var pizzaSpecials = await Api.GetPizzaSpecialsAsync();
 
         var cut = Render(@<Index />);
 
@@ -22,10 +22,10 @@
             .BeEquivalentTo(pizzaSpecials);
     }
 
-    [Theory, AutoData]
-    public void Index_When_PizzaCard_Is_Clicked_ConfigurePizzaDialog_Is_Shown(List<PizzaSpecial> pizzaSpecials)
+    [Fact]
+    public void Index_When_PizzaCard_Is_Clicked_ConfigurePizzaDialog_Is_Shown()
     {
-        Api.PizzaSpecialTask.SetResult(pizzaSpecials);
+        //Api.PizzaSpecialTask.SetResult(pizzaSpecials);
         var cut = Render(@<Index />);
         var pizzaCardToClick = cut.FindComponent<PizzaCard>();
         
@@ -47,12 +47,9 @@
     [InlineAutoData(".btn-cancel")]
     [InlineAutoData(".btn-confirm")]
     public void When_ConfigurePizzaDialog_OnCancelEvent_Is_Raised_The_Dialog_Is_Hidden(
-        string buttonToClickCssSelector,
-        List<PizzaSpecial> pizzaSpecials)
+        string buttonToClickCssSelector)
     {
-        Api.PizzaSpecialTask.SetResult(pizzaSpecials);
-        var cut = Render(@<Index />
-    );
+        var cut = Render(@<Index />);
         cut.Find(".pizza-cards li:first-child").Click(); // pop up a ConfigurePizzaDialog
 
         cut.Find($".dialog-container {buttonToClickCssSelector}").Click();
@@ -63,12 +60,11 @@
             .Be(0);
     }
 
-    [Theory, AutoData]
-    public void When_PlaceOrderButton_Is_Clicked_The_PlaceOrderApi_Endpoint_Is_Called_With_Order(
-        List<PizzaSpecial> pizzaSpecials)
+    [Fact]
+    public async Task When_PlaceOrderButton_Is_Clicked_The_PlaceOrderApi_Endpoint_Is_Called_With_Order()
     {
         // arrange
-        Api.PizzaSpecialTask.SetResult(pizzaSpecials);
+        var pizzaSpecials = await Api.GetPizzaSpecialsAsync();
         var cut = Render(@<Index />);        
         AddPizzaSpecialToOrder(listingNumber: 1);
 
@@ -76,8 +72,9 @@
         PlaceOrder();
 
         // assertion
-        Api.Orders.Should().HaveCount(1);
-        Api.Orders[0].Pizzas[0].Special
+        var ordersWithStatus = await Api.GetOrdersWithStatusAsync();
+        ordersWithStatus.Should().HaveCount(1);
+        ordersWithStatus[0].Order.Pizzas[0].Special
             .Should()
             .BeEquivalentTo(pizzaSpecials[0]);
 

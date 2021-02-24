@@ -9,28 +9,22 @@ namespace BlazingPizza.Client.Pages
     {
         private OrderWithStatus? orderWithStatus;
         private bool invalidOrder;
-        private CancellationTokenSource? pollingCancellationToken;
-
+        
         [Inject] private IPizzaApi API { get; set; }
 
         [Parameter] public int OrderId { get; set; }
 
         protected override void OnParametersSet()
         {
-            // If we were already polling for a different order, stop doing so
-            pollingCancellationToken?.Cancel();
-
             // Start a new poll loop
             PollForUpdates();
         }
 
         private async void PollForUpdates()
         {
-            pollingCancellationToken = new CancellationTokenSource();
-
             try
             {
-                await foreach (var ows in API.GetOrderUpdatesById(OrderId, pollingCancellationToken.Token))
+                await foreach (var ows in API.GetOrderUpdatesById(OrderId))
                 {
                     orderWithStatus = ows;
 
@@ -38,15 +32,14 @@ namespace BlazingPizza.Client.Pages
 
                     if (orderWithStatus.IsDelivered)
                     {
-                        pollingCancellationToken.Cancel();
+                        break;
                     }
                 }
             }
             catch (Exception ex)
             {
                 invalidOrder = true;
-                pollingCancellationToken.Cancel();
-                Console.Error.WriteLine(ex);
+                Console.Error.WriteLine(ex.Message);
                 StateHasChanged();
             }
         }
