@@ -1,0 +1,107 @@
+﻿@inherits TestContext
+@code {
+    private FakePizzaApi Api { get; }
+    private FakeNavigationManager NavigationManager { get; }
+
+    public IndexTests()
+    {
+        Api = this.AddFakePizzaApi();
+        NavigationManager = this.AddFakeNavigationManager();
+    }
+
+    [Fact]
+    public async Task Index_Renders_PizzaSpecials_Returned_From_Api()
+    {
+        var pizzaSpecials = await Api.GetPizzaSpecialsAsync();
+
+        var cut = Render(@<Index />);
+
+        var pizzaCards = cut.FindComponents<PizzaCard>();
+        pizzaCards.Count.Should().Be(pizzaSpecials.Count);
+        pizzaCards.Select(x => x.Instance.Special)
+            .Should()
+            .BeEquivalentTo(pizzaSpecials);
+    }
+
+    [Fact]
+    public void Index_When_PizzaCard_Is_Clicked_ConfigurePizzaDialog_Is_Shown()
+    {
+        var cut = Render(@<Index />);
+        var pizzaCardToClick = cut.FindComponent<PizzaCard>();
+        
+        pizzaCardToClick.Find("li").Click();
+
+        var dialog = cut.FindComponent<ConfigurePizzaDialog>();
+        dialog.Instance.Pizza
+            .Should()
+            .BeEquivalentTo(new Pizza()
+            {
+                Special = pizzaCardToClick.Instance.Special,
+                SpecialId = pizzaCardToClick.Instance.Special.Id,
+                Size = Pizza.DefaultSize,
+                Toppings = new List<PizzaTopping>(),
+            });
+    }
+
+    [Theory]
+    [InlineAutoData(".btn-cancel")]
+    [InlineAutoData(".btn-confirm")]
+    public void When_ConfigurePizzaDialog_OnCancelEvent_Is_Raised_The_Dialog_Is_Hidden(
+        string buttonToClickCssSelector)
+    {
+        var cut = Render(@<Index />);
+        cut.Find(".pizza-cards li:first-child").Click(); // pop up a ConfigurePizzaDialog
+
+        cut.Find($".dialog-container {buttonToClickCssSelector}").Click();
+        
+        cut.FindAll(".dialog-container")
+            .Count
+            .Should()
+            .Be(0);
+    }
+
+    [Fact]
+    public async Task When_PlaceOrderButton_Is_Clicked_The_PlaceOrderApi_Endpoint_Is_Called_With_Order()
+    {
+        // arrange
+        var pizzaSpecials = await Api.GetPizzaSpecialsAsync();
+        var cut = Render(@<Index />);        
+
+        // act
+        await PlaceOrderForPizzaSpecialAsync(cut, listingNumber: 1);
+
+        // assertion
+        var ordersWithStatus = await Api.GetOrdersWithStatusAsync();
+        ordersWithStatus.Should().HaveCount(1);
+        ordersWithStatus[0].Order.Pizzas[0].Special
+            .Should()
+            .BeEquivalentTo(pizzaSpecials[0]);
+    }
+
+    [Fact]
+    public async Task When_Order_Is_Placed_Then_The_App_Should_Navigate_To_MyOrders_Page_For_The_Order()
+    {
+        // Arrange        
+        var cut = Render(@<Index />);
+        
+        // Act
+        var createdOrderId = await PlaceOrderForPizzaSpecialAsync(cut, listingNumber: 1);
+
+        // Assertion
+        NavigationManager.Uri
+            .Should()
+            .Be($"{NavigationManager.BaseUri}myorders/{createdOrderId}");
+    }
+
+    private async Task<int> PlaceOrderForPizzaSpecialAsync(IRenderedFragment cut, int listingNumber)
+    {
+        var index = cut.FindComponent<Index>(); // throws if there no Index component in the rendered fragmenet.
+
+        cut.Find($".pizza-cards li:nth-child({listingNumber})").Click();
+        cut.Find($".dialog-container .btn-confirm").Click();
+        cut.Find(".sidebar .order-total button").Click();
+
+        var allOrders = await Api.GetOrdersWithStatusAsync();
+        return allOrders.Max(x => x.Order.OrderId);
+    }
+}
