@@ -1,11 +1,9 @@
 ﻿@inherits TestContext
 @code
-{
-    private FakePizzaApi Api { get; }
-
+{    
     public MyOrdersTests()
     {
-        Api = this.AddFakePizzaApi();
+        this.AddBlazingPizzaSupport();        
     }
 
     [Fact]
@@ -34,8 +32,9 @@
     public async Task When_PizzaAPI_Returns_OrdersWithStatus_The_OrdersTable_Component_Is_Rendered_With_The_Orders(
         Order order)
     {        
-        await Api.PlaceOrderAsync(order);
-        var ordersWithStatus = await Api.GetOrdersWithStatusAsync();
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        await api.PlaceOrderAsync(order);
+        var ordersWithStatus = await api.GetOrdersWithStatusAsync();
         
         var cut = Render(@<MyOrders/>);
 
