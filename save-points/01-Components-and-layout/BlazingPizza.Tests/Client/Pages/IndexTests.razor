@@ -1,0 +1,23 @@
+﻿@inherits TestContext
+@code {
+
+    public IndexTests()
+    {
+        this.AddBlazingPizzaSupport();
+    }
+
+    [Fact]
+    public async Task Index_Renders_PizzaSpecials_Returned_From_Api()
+    {
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        var pizzaSpecials = await api.GetPizzaSpecialsAsync();
+
+        var cut = Render(@<Index />);
+
+        var pizzaCards = cut.FindComponents<PizzaCard>();
+        pizzaCards.Count.Should().Be(pizzaSpecials.Count);
+        pizzaCards.Select(x => x.Instance.Special)
+            .Should()
+            .BeEquivalentTo(pizzaSpecials);
+    }    
+}
