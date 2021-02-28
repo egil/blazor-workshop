@@ -1,15 +1,14 @@
 ﻿@inherits TestContext
 @code {
-    private NavigationManager navigationManager; 
-
     public MainLayoutTests()
     {
-        navigationManager = this.AddFakeNavigationManager();
+        this.AddBlazingPizzaSupport();
     }
 
     [Fact]
     public void MyOrdersNavigationItem_Is_Marked_As_Active_When_Viewing_MyOrdersPage()
     {
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
         var cut = Render(@<MainLayout />);
 
         navigationManager.NavigateTo("myorders");

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using BlazingPizza.Client.Services;
 
 namespace BlazingPizza.Client.Services
 {

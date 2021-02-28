@@ -1,18 +1,15 @@
 ﻿@inherits TestContext
-@code {
-    private FakePizzaApi Api { get; }
-    private FakeNavigationManager NavigationManager { get; }
-
+@code {    
     public IndexTests()
     {
-        Api = this.AddFakePizzaApi();
-        NavigationManager = this.AddFakeNavigationManager();
+        this.AddBlazingPizzaSupport();
     }
 
     [Fact]
     public async Task Index_Renders_PizzaSpecials_Returned_From_Api()
     {
-        var pizzaSpecials = await Api.GetPizzaSpecialsAsync();
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        var pizzaSpecials = await api.GetPizzaSpecialsAsync();
 
         var cut = Render(@<Index />);
 
@@ -64,14 +61,15 @@
     public async Task When_PlaceOrderButton_Is_Clicked_The_PlaceOrderApi_Endpoint_Is_Called_With_Order()
     {
         // arrange
-        var pizzaSpecials = await Api.GetPizzaSpecialsAsync();
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        var pizzaSpecials = await api.GetPizzaSpecialsAsync();
         var cut = Render(@<Index />);        
 
         // act
         await PlaceOrderForPizzaSpecialAsync(cut, listingNumber: 1);
 
         // assertion
-        var ordersWithStatus = await Api.GetOrdersWithStatusAsync();
+        var ordersWithStatus = await api.GetOrdersWithStatusAsync();
         ordersWithStatus.Should().HaveCount(1);
         ordersWithStatus[0].Order.Pizzas[0].Special
             .Should()
@@ -82,26 +80,28 @@
     public async Task When_Order_Is_Placed_Then_The_App_Should_Navigate_To_MyOrders_Page_For_The_Order()
     {
         // Arrange        
+        var navigationManager = Services.GetRequiredService<FakeNavigationManager>();
         var cut = Render(@<Index />);
         
         // Act
         var createdOrderId = await PlaceOrderForPizzaSpecialAsync(cut, listingNumber: 1);
 
         // Assertion
-        NavigationManager.Uri
+        navigationManager.Uri
             .Should()
-            .Be($"{NavigationManager.BaseUri}myorders/{createdOrderId}");
+            .Be($"{navigationManager.BaseUri}myorders/{createdOrderId}");
     }
 
     private async Task<int> PlaceOrderForPizzaSpecialAsync(IRenderedFragment cut, int listingNumber)
     {
+        var api = Services.GetRequiredService<FakePizzaApi>();
         var index = cut.FindComponent<Index>(); // throws if there no Index component in the rendered fragmenet.
 
         cut.Find($".pizza-cards li:nth-child({listingNumber})").Click();
         cut.Find($".dialog-container .btn-confirm").Click();
         cut.Find(".sidebar .order-total button").Click();
 
-        var allOrders = await Api.GetOrdersWithStatusAsync();
+        var allOrders = await api.GetOrdersWithStatusAsync();
         return allOrders.Max(x => x.Order.OrderId);
     }
 }

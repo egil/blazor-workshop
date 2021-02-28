@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using BlazingPizza.Client.Services;
 using Microsoft.AspNetCore.Components;
@@ -9,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 namespace BlazingPizza.ComponentsLibrary
 {
     public partial class ConfigurePizzaDialog : ComponentBase
-    { 
+    {
         private IReadOnlyList<Topping>? toppings;
 
         [Inject] public IPizzaApi Api { get; set; }

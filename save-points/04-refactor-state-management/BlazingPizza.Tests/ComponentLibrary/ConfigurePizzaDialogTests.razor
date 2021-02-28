@@ -1,10 +1,8 @@
 ﻿@inherits TestContext
 @code {
-    private FakePizzaApi Api { get; }
-
     public ConfigurePizzaDialogTests()
     {
-        Api = this.AddFakePizzaApi();
+        this.AddBlazingPizzaSupport();
     }
 
     [Theory, AutoData]
@@ -97,13 +95,15 @@
                     </select>
                 </div>
                 <div class="toppings" diff:ignore></div>
-            </div>);
+            </div>
+    );
     }
 
     [Theory, AutoData]
     public async Task Dialog_Displays_Toppings_In_Dropdown_When_Loaded_From_API(Pizza pizza)
     {
-        var toppings = await Api.GetToppingsAsync();
+        var api = Services.GetRequiredService<IPizzaApi>();
+        var toppings = await api.GetToppingsAsync();
 
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
 
@@ -120,7 +120,8 @@
     [Theory, AutoData]
     public async Task Dialog_When_Topping_Is_Selected_It_Is_Added_To_Pizzas_Toppings_List(Pizza pizza)
     {
-        var toppings = await Api.GetToppingsAsync();
+        var api = Services.GetRequiredService<IPizzaApi>();
+        var toppings = await api.GetToppingsAsync();
         pizza.Toppings.Clear();
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
 
@@ -134,8 +135,9 @@
     [Theory, AutoData]
     public async Task Toppings_Can_Only_Be_Added_Once_To_A_Pizza(Pizza pizza)
     {
+        var api = Services.GetRequiredService<IPizzaApi>();
         pizza.Toppings.Clear();
-        var toppings = await Api.GetToppingsAsync();
+        var toppings = await api.GetToppingsAsync();
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
 
         cut.Find(".toppings-group select").Change("0");
@@ -185,8 +187,7 @@
     public void Toppings_Can_Be_Removed_By_Clicking_The_X_On_A_Topping_In_The_Selected_Toppings_Listing(
         Pizza pizza)
     {
-        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>
-    );
+        var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
         var firstTopping = cut.FindAll(".toppings .topping").First();
         var orignalFirstToppingName = firstTopping.QuerySelector(".topping-name").TextContent;
 

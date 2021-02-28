@@ -1,11 +1,9 @@
 ﻿@inherits TestContext
 @code
 {
-    private FakePizzaApi Api { get; }
-
     public OrderDetailsTests()
     {
-        Api = this.AddFakePizzaApi();
+        this.AddBlazingPizzaSupport();
     }
 
     [Fact]
@@ -33,8 +31,9 @@
     [Theory, AutoData]
     public async Task When_API_Returns_An_Order_A_OrderTracker_Is_Displayed(Order order)
     {
-        var orderId = await Api.PlaceOrderAsync(order);
-        var orderWithStatus = await Api.GetOrderWithStatusById(orderId);
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        var orderId = await api.PlaceOrderAsync(order);
+        var orderWithStatus = await api.GetOrderWithStatusById(orderId);
 
         var cut = Render(@<OrderDetails OrderId=orderId />);
 
@@ -59,13 +58,14 @@
 
     [Theory, AutoData]
     public async Task When_API_Returns_Updates_To_Order_The_OrderTracker_Is_Updated(Order newOrder)
-    {
-        var orderId = await Api.PlaceOrderAsync(newOrder);
+    {        
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        var orderId = await api.PlaceOrderAsync(newOrder);
         var cut = Render(@<OrderDetails OrderId=orderId />);
         var statusElement = cut.Find(".track-order p");
 
         // act
-        Api.SetOrderStatusAsDelivered(orderId);
+        api.SetOrderStatusAsDelivered(orderId);
 
         // assert
         //var orderStatus = await GetOrderWithStatusById(orderId);

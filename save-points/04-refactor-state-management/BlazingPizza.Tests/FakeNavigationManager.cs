@@ -6,11 +6,11 @@ namespace BlazingPizza
 {
     public class FakeNavigationManager : NavigationManager
     {
-        private readonly TestContext context;
+        private readonly ITestRenderer renderer;
 
-        public FakeNavigationManager(TestContext context)
+        public FakeNavigationManager(ITestRenderer renderer)
         {
-            this.context = context;            
+            this.renderer = renderer;            
             Initialize("http://localhost/", "http://localhost/");
         }
 
@@ -18,7 +18,7 @@ namespace BlazingPizza
         {
             Uri = ToAbsoluteUri(uri).ToString();
 
-            context.Renderer.Dispatcher.InvokeAsync(
+            renderer.Dispatcher.InvokeAsync(
                 () => NotifyLocationChanged(isInterceptedLink: false));
         }
     }
