@@ -1,7 +1,4 @@
 ﻿@page "/checkout"
-@inject OrderState OrderState
-@inject HttpClient HttpClient
-@inject NavigationManager NavigationManager
 
 <div class="main">
     <EditForm Model="OrderState.Order.DeliveryAddress" OnValidSubmit="PlaceOrder">
@@ -17,23 +14,11 @@
             </div>
         </div>
 
-        <button type="submit" class="checkout-button btn btn-warning" disabled="@isSubmitting">
+        <button class="checkout-button btn btn-warning" type="submit">
             Place order
         </button>
 
         <DataAnnotationsValidator />
+        <ValidationSummary />
     </EditForm>
 </div>
-
-@code {
-    bool isSubmitting;
-
-    async Task PlaceOrder()
-    {
-        isSubmitting = true;
-        var response = await HttpClient.PostAsJsonAsync("orders", OrderState.Order);
-        var newOrderId= await response.Content.ReadFromJsonAsync<int>();
-        OrderState.ResetOrder();
-        NavigationManager.NavigateTo($"myorders/{newOrderId}");
-    }
-}
