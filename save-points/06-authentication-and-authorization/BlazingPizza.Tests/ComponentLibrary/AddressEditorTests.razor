@@ -1,0 +1,31 @@
+﻿@inherits TestContext
+@code {
+    [Fact]
+    public void When_Address_Info_Is_Added_To_Form_Address_Object_Is_Updated()
+    {
+        var address = new Address();
+        var cut = Render(
+            @<EditForm Model="address">
+                <AddressEditor Address=address />
+             </EditForm>);
+
+        cut.FindAll("input")[0].Change("NAME");
+        cut.FindAll("input")[1].Change("LINE1");
+        cut.FindAll("input")[2].Change("LINE2");
+        cut.FindAll("input")[3].Change("CITY");
+        cut.FindAll("input")[4].Change("REGION");
+        cut.FindAll("input")[5].Change("POSTALCODE");
+
+        address
+            .Should()
+            .BeEquivalentTo(new Address
+            {
+                Name = "NAME",
+                Line1 = "LINE1",
+                Line2 = "LINE2",
+                City = "CITY",
+                Region = "REGION",
+                PostalCode = "POSTALCODE",
+            });
+    }
+}

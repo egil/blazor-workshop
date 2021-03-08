@@ -1,0 +1,21 @@
+﻿@inherits TestContext
+@code {
+    public MainLayoutTests()
+    {
+        this.AddBlazingPizzaSupport();
+    }
+
+    [Fact]
+    public void MyOrdersNavigationItem_Is_Marked_As_Active_When_Viewing_MyOrdersPage()
+    {
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var cut = Render(@<MainLayout />);
+
+        navigationManager.NavigateTo("myorders");
+
+        cut.Find("a[href=myorders]")
+            .ClassList
+            .Should()
+            .Contain("active");
+    }
+}

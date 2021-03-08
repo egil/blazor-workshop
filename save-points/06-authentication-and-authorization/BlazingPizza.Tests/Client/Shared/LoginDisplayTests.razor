@@ -1,0 +1,75 @@
+﻿@inherits TestContext
+@code {
+    public LoginDisplayTests()
+    {
+        this.AddBlazingPizzaSupport();        
+    }
+
+    [Fact]
+    public void When_AuthState_Is_NotAuthorized_Register_And_Login_Links_Are_Displayed()
+    {
+        var cut = Render(@<LoginDisplay/>);
+
+        cut.MarkupMatches(
+            @<div class="user-info">
+                <a class="sign-in" href="authentication/register">Register</a>
+                <a class="sign-in" href="authentication/login">Log in</a>
+             </div>);
+    }
+
+    [Fact]
+    public void When_AuthState_Is_Authorizing_Three_Dots_Are_Displayed()
+    {
+        var authContext = Services.GetRequiredService<TestAuthorizationContext>();
+        authContext.SetAuthorizing();
+
+        var cut = Render(@<LoginDisplay />);
+
+        cut.MarkupMatches(@<div class="user-info">...</div>);
+    }
+
+    [Fact]
+    public void When_AuthState_Is_Authorized_UserInfo_Is_Displayed()
+    {
+        var authContext = Services.GetRequiredService<TestAuthorizationContext>();
+        authContext.SetAuthorized("Homer Simpson", AuthorizationState.Authorized);
+
+        var cut = Render(@<LoginDisplay />);
+
+        cut.MarkupMatches(
+            @<div class="user-info">
+                 <img src="img/user.svg" />
+                 <div>
+                     <a href="authentication/profile" class="username">Homer Simpson</a>
+                     <button class="btn btn-link sign-out">Sign out</button>
+                 </div>
+             </div>);
+    }
+
+    [Fact]
+    public void When_SignOut_Button_Is_Clicked_Then_User_Is_SignedOut()
+    {
+        var authContext = Services.GetRequiredService<TestAuthorizationContext>();
+        authContext.SetAuthorized("Homer Simpson", AuthorizationState.Authorized);
+        var cut = Render(@<LoginDisplay />);
+        
+        cut.Find(".sign-out").Click();
+
+        JSInterop.VerifyInvoke("sessionStorage.setItem");
+    }
+
+    [Fact]
+    public void When_SignOut_Button_Is_Clicked_Then_User_Is_Taken_To_Logout_Page()
+    {
+        var navMan = Services.GetRequiredService<NavigationManager>();
+        var authContext = Services.GetRequiredService<TestAuthorizationContext>();
+        authContext.SetAuthorized("Homer Simpson", AuthorizationState.Authorized);
+        var cut = Render(@<LoginDisplay />);
+        
+        cut.Find(".sign-out").Click();
+
+        navMan.Uri
+            .Should()
+            .Be($"{navMan.BaseUri}authentication/logout");
+    }
+}

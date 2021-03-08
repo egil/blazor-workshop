@@ -1,0 +1,34 @@
+﻿@inherits TestContext
+@code 
+{
+    [Theory, AutoData]
+    public void OrdersTable_Correctly_Renders_Orders_Passed_To_It(
+        IReadOnlyList<OrderWithStatus> orders)
+    {
+        var cut = Render(@<OrdersTable Orders=orders />);
+
+        cut.MarkupMatches(
+            @<div class="list-group orders-list">
+                @foreach (var item in orders)
+                {
+                <div class="list-group-item">
+                    <div class="col">
+                        <h5>@item.Order.CreatedTime.ToLongDateString()</h5>
+                        Items:
+                        <strong>@item.Order.Pizzas.Count()</strong>;
+                        Total price:
+                        <strong>£@item.Order.GetFormattedTotalPrice()</strong>
+                    </div>
+                    <div class="col">
+                        Status: <strong>@item.StatusText</strong>
+                    </div>
+                    <div class="col flex-grow-0">
+                        <a href="myorders/@item.Order.OrderId" class="btn btn-success">
+                            Track &gt;
+                        </a>
+                    </div>
+                </div>
+                }
+            </div>);
+    }
+}

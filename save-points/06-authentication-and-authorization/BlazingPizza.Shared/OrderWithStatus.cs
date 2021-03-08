@@ -1,6 +1,6 @@
-﻿using BlazingPizza.ComponentsLibrary.Map;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using BlazingPizza.Maps;
 
 namespace BlazingPizza
 {
@@ -74,6 +74,10 @@ namespace BlazingPizza
         }
 
         static Marker ToMapMarker(string description, LatLong coords, bool showPopup = false)
-            => new Marker { Description = description, X = coords.Longitude, Y = coords.Latitude, ShowPopup = showPopup };
+            => new Marker { 
+                Description = description, 
+                X = coords?.Longitude ?? 0d, 
+                Y = coords?.Latitude ?? 0d, 
+                ShowPopup = showPopup };
     }
 }
