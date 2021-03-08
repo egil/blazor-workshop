@@ -72,7 +72,39 @@
             .Should()
             .Be($"{navigationManager.BaseUri}myorders/{order.OrderId}");
     }   
+       
+    [Theory, AutoData]
+    public void When_PlaceOrderButton_Is_Clicked_The_Button_Is_Disabled_Until_The_PlaceOrder_Api_Call_Returns(
+        PizzaSpecial pizzaToOrder, Address deliveryAddress)
+    {
+        Services.AddSingleton<IPizzaApi, LoadingForeverPizzaApi>();
+        CreatePizzaSpecialOrder(pizzaToOrder, deliveryAddress);
+        var cut = Render(@<Checkout/>);
         
+        PlaceOrder(cut);
+
+        cut.Find(".checkout-button")
+            .Attributes
+            .Should()
+            .Contain(x => x.Name == "disabled");
+    }
+    
+    [Theory, AutoData]
+    public void When_PlaceOrder_Api_Call_Returns_PlaceOrderButton_Is_Enabled(
+        PizzaSpecial pizzaToOrder, Address deliveryAddress)
+    {
+        CreatePizzaSpecialOrder(pizzaToOrder, deliveryAddress);
+        var cut = Render(@<Checkout/>);
+        
+        PlaceOrder(cut);
+
+        cut.WaitForAssertion(() =>
+            cut.Find(".checkout-button")
+                .Attributes
+                .Should()
+                .NotContain(x => x.Name == "disabled"));
+    }
+
     private Order CreatePizzaSpecialOrder(PizzaSpecial pizzaSpecial, Address deliveryAddress)
     {
         var orderState = Services.GetRequiredService<OrderState>();

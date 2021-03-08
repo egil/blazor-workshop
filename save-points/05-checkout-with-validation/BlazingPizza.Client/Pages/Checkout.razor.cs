@@ -6,6 +6,8 @@ namespace BlazingPizza.Client.Pages
 {
     public partial class Checkout : ComponentBase
     {
+        private bool IsSubmitting { get; set; }
+
         [Inject] private IPizzaApi Api { get; set; }
         
         [Inject] private NavigationManager NavigationManager { get; set; }
@@ -14,7 +16,9 @@ namespace BlazingPizza.Client.Pages
 
         private async Task PlaceOrder()
         {
+            IsSubmitting = true;
             var orderId = await Api.PlaceOrderAsync(OrderState.Order);
+            IsSubmitting = false;
             OrderState.ResetOrder();
             NavigationManager.NavigateTo($"myorders/{orderId}");
         }
