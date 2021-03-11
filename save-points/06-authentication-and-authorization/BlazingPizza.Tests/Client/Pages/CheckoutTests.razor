@@ -56,7 +56,7 @@
     }
 
     [Theory, AutoData]
-    public async Task When_Order_Is_Placed_Then_The_App_Should_Navigate_To_MyOrders_Page_For_The_Order(
+    public void When_Order_Is_Placed_Then_The_App_Should_Navigate_To_MyOrders_Page_For_The_Order(
         PizzaSpecial pizzaSpecial, Address deliveryAddress)
     {
         // Arrange        
@@ -112,13 +112,26 @@
         Services.AddSingleton<IPizzaApi, MissingAccessTokenPizzaApi>();
         var navMan = Services.GetRequiredService<NavigationManager>();
         CreatePizzaSpecialOrder(pizzaToOrder, deliveryAddress);
-        var cut = Render(@<Checkout/>);
+        var cut = Render(@<Checkout/>
+    );
         
         PlaceOrder(cut);
 
         navMan.Uri
             .Should()
             .Be($"{navMan.BaseUri}authentication/login");
+    }
+
+    [Fact]
+    public void CheckoutPage_Requires_User_To_Be_Authorized()
+    {
+        var cut = RenderComponent<Checkout>();
+
+        cut.Instance
+            .GetType()
+            .GetCustomAttributes(typeof(AuthorizeAttribute), inherit: false)
+            .Should()
+            .NotBeEmpty();
     }
 
     private Order CreatePizzaSpecialOrder(PizzaSpecial pizzaSpecial, Address deliveryAddress)

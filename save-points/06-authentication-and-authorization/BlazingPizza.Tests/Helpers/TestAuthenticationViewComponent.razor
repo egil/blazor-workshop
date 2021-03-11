@@ -1,0 +1,8 @@
+﻿@Action
+@code{
+    [Parameter] public string Action { get; set; }
+
+    [Parameter] public PizzaAuthenticationState AuthenticationState { get; set; }
+
+    [Parameter] public EventCallback<PizzaAuthenticationState> OnLogInSucceeded { get; set; }
+}

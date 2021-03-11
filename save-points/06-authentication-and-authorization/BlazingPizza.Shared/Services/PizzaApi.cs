@@ -9,26 +9,33 @@ namespace BlazingPizza.Client.Services
 {
     public class PizzaApi : IPizzaApi
     {
-        private readonly HttpClient httpClient;
+        public const string AuthenticatedClientName = nameof(PizzaApi) + nameof(AuthenticatedClientName);
+        public const string UnauthenticatedClientName = nameof(PizzaApi) + nameof(UnauthenticatedClientName);
 
-        public PizzaApi(HttpClient httpClient)
-            => this.httpClient = httpClient;
+        private readonly HttpClient authedHttpClient;
+        private readonly HttpClient unauthedHttpClient;
+
+        public PizzaApi(IHttpClientFactory httpClientFactory)
+        {
+            authedHttpClient = httpClientFactory.CreateClient(AuthenticatedClientName);
+            unauthedHttpClient = httpClientFactory.CreateClient(UnauthenticatedClientName);
+        }
 
         public async Task<IReadOnlyList<PizzaSpecial>> GetPizzaSpecialsAsync()
-            => await httpClient.GetFromJsonAsync<List<PizzaSpecial>>("specials");
+            => await unauthedHttpClient.GetFromJsonAsync<List<PizzaSpecial>>("specials");
 
         public async Task<IReadOnlyList<Topping>> GetToppingsAsync()
-            => await httpClient.GetFromJsonAsync<List<Topping>>("toppings");
+            => await unauthedHttpClient.GetFromJsonAsync<List<Topping>>("toppings");
 
         public async Task<IReadOnlyList<OrderWithStatus>> GetOrdersAsync()
-            => await httpClient.GetFromJsonAsync<List<OrderWithStatus>>("orders");
+            => await authedHttpClient.GetFromJsonAsync<List<OrderWithStatus>>("orders");
 
         public async Task<OrderWithStatus> GetOrderAsync(int orderId)
-            => await httpClient.GetFromJsonAsync<OrderWithStatus>($"orders/{orderId}");
+            => await authedHttpClient.GetFromJsonAsync<OrderWithStatus>($"orders/{orderId}");
 
         public async Task<int> PlaceOrderAsync(Order order)
         {
-            var response = await httpClient.PostAsJsonAsync("orders", order);
+            var response = await authedHttpClient.PostAsJsonAsync("orders", order);
             response.EnsureSuccessStatusCode();
             var orderId = await response.Content.ReadFromJsonAsync<int>();
             return orderId;
@@ -40,7 +47,7 @@ namespace BlazingPizza.Client.Services
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var orderWithStatus = await httpClient.GetFromJsonAsync<OrderWithStatus>($"orders/{orderId}", cancellationToken);
+                var orderWithStatus = await authedHttpClient.GetFromJsonAsync<OrderWithStatus>($"orders/{orderId}", cancellationToken);
                 yield return orderWithStatus;
                 await Task.Delay(4000, cancellationToken);
             }

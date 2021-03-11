@@ -1,8 +1,30 @@
 ﻿@page "/authentication/{action}"
+@inject OrderState OrderState
 
-<RemoteAuthenticatorView Action="@Action" />
+<ConfigurableAuthenticationView Action="@Action"
+    AuthenticationState="RemoteAuthenticationState"
+    OnLogInSucceeded="RestorePizza" />
 
-@code{
+@code{   
     [Parameter]
     public string Action { get; set; }
+
+    private PizzaAuthenticationState RemoteAuthenticationState { get; set; } = new PizzaAuthenticationState();
+
+    protected override void OnInitialized()
+    {
+        if (RemoteAuthenticationActions.IsAction(RemoteAuthenticationActions.LogIn, Action))
+        {
+            // Preserve the current order so that we don't loose it
+            RemoteAuthenticationState.Order = OrderState.Order;
+        }
+    }
+
+    private void RestorePizza(PizzaAuthenticationState pizzaState)
+    {
+        if (pizzaState.Order != null)
+        {
+            OrderState.ReplaceOrder(pizzaState.Order);
+        }
+    }
 }

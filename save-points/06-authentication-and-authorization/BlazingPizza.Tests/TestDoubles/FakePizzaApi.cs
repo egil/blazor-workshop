@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using BlazingPizza.Client.Services;
+using Bunit.TestDoubles;
 
 namespace BlazingPizza
 {
@@ -20,8 +21,10 @@ namespace BlazingPizza
         private readonly List<PizzaSpecial> pizzaSpecials;
         private readonly List<Order> orders = new List<Order>();
         private readonly List<OrderWithStatus> orderWithStatuses = new List<OrderWithStatus>();
+        private readonly TestAuthorizationContext? fakeAuth;
 
-        public FakePizzaApi(IEnumerable<Topping>? toppings = null,
+        public FakePizzaApi(TestAuthorizationContext fakeAuth = null,
+                            IEnumerable<Topping>? toppings = null,
                             IEnumerable<PizzaSpecial>? pizzaSpecials = null)
         {
             var fixture = new Fixture();
@@ -29,6 +32,7 @@ namespace BlazingPizza
                 ?? fixture.CreateMany<Topping>(10).ToList<Topping>();
             this.pizzaSpecials = pizzaSpecials?.ToList() 
                 ?? fixture.CreateMany<PizzaSpecial>(20).ToList();
+            this.fakeAuth = fakeAuth;
         }
 
         public Task<IReadOnlyList<OrderWithStatus>> GetOrdersAsync()
@@ -80,7 +84,7 @@ namespace BlazingPizza
             order.CreatedTime = DateTime.Now;
             order.DeliveryLocation = new LatLong(51.5001, -0.1239);
 
-            // order.UserId = GetUserId();
+            order.UserId = fakeAuth?.UserName ?? string.Empty;
 
             var orderId = orderIdSequence++;
             order.OrderId = orderId;
