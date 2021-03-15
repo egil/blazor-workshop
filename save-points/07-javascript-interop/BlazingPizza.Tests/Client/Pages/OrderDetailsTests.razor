@@ -4,6 +4,7 @@
     public OrderDetailsTests()
     {
         this.AddBlazingPizzaSupport();
+        JSInterop.SetupVoid("deliveryMap.showOrUpdate", _ => true);
     }
 
     [Fact]
@@ -49,8 +50,8 @@
                         </p>
                     </div>
                     <div class="track-order-body" >
-                        <div class="track-order-details" diff:ignore>                    
-                        </div>
+                        <div class="track-order-details" diff:ignore></div>
+                        <div class="track-order-map" diff:ignore></div>
                     </div>
                 </div> 
              </div>);
@@ -68,7 +69,6 @@
         api.SetOrderStatusAsDelivered(orderId);
 
         // assert
-        //var orderStatus = await GetOrderWithStatusById(orderId);
         cut.WaitForAssertion(() => statusElement.TextContent.MarkupMatches($"Status: Delivered"));
     }
 

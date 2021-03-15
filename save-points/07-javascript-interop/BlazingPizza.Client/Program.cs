@@ -20,6 +20,7 @@ namespace BlazingPizza.Client
                 PizzaApi.AuthenticatedClientName,                
                 client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
             ).AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+
             builder.Services.AddHttpClient(
                 PizzaApi.UnauthenticatedClientName,
                 client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)

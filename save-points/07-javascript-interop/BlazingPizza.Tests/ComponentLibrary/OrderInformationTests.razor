@@ -53,8 +53,10 @@
     }
 
     [Theory, AutoData]
-    public void When_PizzaRemoveButton_Is_Clicked_Pizza_Is_Removed_From_Order(Order order)
+    public void When_PizzaRemoveButton_Is_Clicked_And_Confirm_Dialog_Accepted_Then_Pizza_Is_Removed_From_Order(
+        Order order)
     {
+        SetupRemovePizzaConfirmCall(order.Pizzas[0], acceptRemoval: true);
         var cut = Render(@<OrderInformation Order=order />);
         var configuredPizza = cut.FindComponent<ConfiguredPizzaItem>();
         var pizzaToRemove = configuredPizza.Instance.Pizza;
@@ -67,15 +69,40 @@
     }
 
     [Theory, AutoData]
+    public void When_PizzaRemoveButton_Is_Clicked_And_Confirm_Dialog_Rejected_Then_Pizza_Is_Kept_On_Order(
+        Order order)
+    {
+        SetupRemovePizzaConfirmCall(order.Pizzas[0], acceptRemoval: false);
+
+        var cut = Render(@<OrderInformation Order=order />);
+        var configuredPizza = cut.FindComponent<ConfiguredPizzaItem>();
+        var pizzaToRemove = configuredPizza.Instance.Pizza;
+
+        configuredPizza.Find("a").Click();
+        
+        order.Pizzas
+            .Should()
+            .Contain(pizzaToRemove);
+    }
+
+    [Theory, AutoData]
     public void When_OrderButton_Is_Clicked_The_PlaceOrderClicked_Event_Is_Raised(Order order)
     {
         var placeOrderButtonClicked = false;
-        var cut = Render(@<OrderInformation Order=order PlaceOrderClicked="() => placeOrderButtonClicked = true" />);
+        var cut = Render(@<OrderInformation 
+            Order=order 
+            PlaceOrderClicked="() => placeOrderButtonClicked = true" />);
 
         cut.Find(".order-total button").Click();
 
         placeOrderButtonClicked
             .Should()
             .BeTrue();
+    }
+
+    private void SetupRemovePizzaConfirmCall(Pizza pizza, bool acceptRemoval)
+    {
+        JSInterop.Setup<bool>("confirm", $"Remove {pizza.Special.Name} pizza from the order?")
+            .SetResult(acceptRemoval); 
     }
 }

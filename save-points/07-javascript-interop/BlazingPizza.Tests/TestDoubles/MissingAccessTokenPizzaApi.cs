@@ -34,7 +34,7 @@ namespace BlazingPizza
             throw accessTokenNotAvailableException;
         }
 
-        public IAsyncEnumerable<OrderWithStatus> GetOrderUpdatesById(int orderId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<OrderWithStatus> GetOrderUpdatesById(int orderId, CancellationToken cancellationToken = default)
         {
             throw accessTokenNotAvailableException;
         }

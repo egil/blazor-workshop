@@ -1,0 +1,38 @@
+﻿@inherits TestContext
+@code {
+    public MapTests()
+    {
+        this.AddBlazingPizzaSupport();        
+    }
+    
+    [Theory, AutoData]
+    public void After_Map_Is_Rendered_Then_ShowOrUpdate_JS_Method_Is_Called_With_Id_And_Markers(
+        double zoomValue,
+        List<Marker> markers)
+    {
+        JSInterop.SetupVoid("deliveryMap.showOrUpdate", _ => true);
+        
+        var cut = Render(@<Map Zoom="zoomValue" Markers="markers" />
+    );
+
+        var expectedElementId = cut.Find("div").GetAttribute("id");
+        JSInterop.VerifyInvoke("deliveryMap.showOrUpdate")
+            .Arguments
+            .Should()
+            .BeEquivalentTo(new object[]
+            {
+                expectedElementId,
+                markers,
+            });
+    }
+
+    [Fact]
+    public void Map_Component_Renders_Expected_Markup()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var cut = Render(@<Map />);
+
+        cut.MarkupMatches(@<div id:regex="map-.*" style="height: 100%; width: 100%;" />);
+    }
+}

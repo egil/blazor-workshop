@@ -1,4 +1,6 @@
-﻿@if (Order.Pizzas.Any())
+﻿@inject IJSRuntime JS
+
+@if (Order.Pizzas.Any())
 {
     <div class="order-contents">
         <h2>Your order</h2>
@@ -28,8 +30,11 @@ else
 
     [Parameter] public EventCallback PlaceOrderClicked { get; set; }
 
-    void RemoveConfiguredPizza(Pizza pizza)
+    async Task RemoveConfiguredPizza(Pizza pizza)
     {
-        Order.Pizzas.Remove(pizza);
+        if (await JS.Confirm($"Remove {pizza.Special.Name} pizza from the order?"))
+        {
+            Order.Pizzas.Remove(pizza);
+        }
     }
 } 
