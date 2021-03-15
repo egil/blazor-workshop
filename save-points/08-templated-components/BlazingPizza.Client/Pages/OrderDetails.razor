@@ -1,9 +1,4 @@
 ﻿@page "/myorders/{orderId:int}"
-@attribute [Authorize]
-@using System.Threading
-@inject OrdersClient OrdersClient
-@inject NavigationManager NavigationManager
-@implements IDisposable
 
 <div class="main">
     @if (invalidOrder)
@@ -11,7 +6,7 @@
         <h2>Nope</h2>
         <p>Sorry, this order could not be loaded.</p>
     }
-    else if (orderWithStatus == null)
+    else if (orderWithStatus is null)
     {
         <text>Loading...</text>
     }
@@ -37,60 +32,3 @@
         </div>
     }
 </div>
-
-@code {
-    [Parameter] public int OrderId { get; set; }
-
-    OrderWithStatus orderWithStatus;
-    bool invalidOrder;
-    CancellationTokenSource pollingCancellationToken;
-
-    protected override void OnParametersSet()
-    {
-        // If we were already polling for a different order, stop doing so
-        pollingCancellationToken?.Cancel();
-
-        // Start a new poll loop
-        PollForUpdates();
-    }
-
-    private async void PollForUpdates()
-    {
-        invalidOrder = false;
-        pollingCancellationToken = new CancellationTokenSource();
-        while (!pollingCancellationToken.IsCancellationRequested)
-        {
-            try
-            {
-                orderWithStatus = await OrdersClient.GetOrder(OrderId);
-                StateHasChanged();
-
-                if (orderWithStatus.IsDelivered)
-                {
-                    pollingCancellationToken.Cancel();
-                }
-                else
-                {
-                    await Task.Delay(4000);
-                }
-            }
-            catch (AccessTokenNotAvailableException ex)
-            {
-                pollingCancellationToken.Cancel();
-                ex.Redirect();
-            }
-            catch (Exception ex)
-            {
-                invalidOrder = true;
-                pollingCancellationToken.Cancel();
-                Console.Error.WriteLine(ex);
-                StateHasChanged();
-            }
-        }
-    }
-
-    void IDisposable.Dispose()
-    {
-        pollingCancellationToken?.Cancel();
-    }
-}

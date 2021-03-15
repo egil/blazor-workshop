@@ -1,17 +1,15 @@
 ﻿@page "/authentication/{action}"
 @inject OrderState OrderState
-@inject NavigationManager NavigationManager
 
-<RemoteAuthenticatorViewCore
-    TAuthenticationState="PizzaAuthenticationState"
+<ConfigurableAuthenticationView Action="@Action"
     AuthenticationState="RemoteAuthenticationState"
-    OnLogInSucceeded="RestorePizza"
-    Action="@Action" />
+    OnLogInSucceeded="RestorePizza" />
 
-@code{
-    [Parameter] public string Action { get; set; }
+@code{   
+    [Parameter]
+    public string Action { get; set; }
 
-    public PizzaAuthenticationState RemoteAuthenticationState { get; set; } = new PizzaAuthenticationState();
+    private PizzaAuthenticationState RemoteAuthenticationState { get; set; } = new PizzaAuthenticationState();
 
     protected override void OnInitialized()
     {
