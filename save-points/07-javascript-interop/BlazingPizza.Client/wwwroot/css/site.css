@@ -411,7 +411,7 @@ form {
     padding: 0 1rem;
 }
 
-    .dialog-body > div {
+    .dialog-body .toppings-group > div {
         display: flex;
         margin-top: 1rem;
         align-items: center;

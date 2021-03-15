@@ -1,0 +1,168 @@
+﻿@inherits TestContext
+@code {
+    public CheckoutTests()
+    {
+        this.AddBlazingPizzaSupport();
+    }
+
+    [Fact]
+    public void Renders_OrderReview_Component_With_Order_From_State_Passed_Into_It()
+    {
+        var orderState = Services.GetRequiredService<OrderState>();
+        var cut = Render(@<Checkout/>);
+
+        cut.FindComponent<OrderReview>()
+            .Instance
+            .Order
+            .Should()
+            .Be(orderState.Order);
+    }
+
+    [Fact]
+    public void Renders_AddressEditor_Component_With_Order_DeliveryAddress_From_State_Passed_Into_It()
+    {
+        var orderState = Services.GetRequiredService<OrderState>();
+        var cut = Render(@<Checkout/>);
+
+        cut.FindComponent<AddressEditor>()
+            .Instance
+            .Address
+            .Should()
+            .Be(orderState.Order.DeliveryAddress);
+    }
+
+    [Theory, AutoData]
+    public async Task When_DeliveryAddress_Is_Invalid_Order_Cannot_Be_Placed(
+        PizzaSpecial pizzaToOrder, [NoAutoProperties] Address deliveryAddress)
+    {
+        var expectedOrder = CreatePizzaSpecialOrder(pizzaToOrder, deliveryAddress);
+        var cut = Render(@<Checkout/>);
+
+        PlaceOrder(cut);
+
+        await VerifyApiHasNotReceivedAnyOrdersAsync();        
+    }
+
+    [Theory, AutoData]
+    public async Task When_PlaceOrderButton_Is_Clicked_The_PlaceOrderApi_Endpoint_Is_Called_With_Order(
+        PizzaSpecial pizzaToOrder, Address deliveryAddress)
+    {
+        var expectedOrder = CreatePizzaSpecialOrder(pizzaToOrder, deliveryAddress);
+        var cut = Render(@<Checkout/>);
+
+        PlaceOrder(cut);
+
+        await VerifyApiHasReceivedOrderAsync(expectedOrder);
+    }
+
+    [Theory, AutoData]
+    public void When_Order_Is_Placed_Then_The_App_Should_Navigate_To_MyOrders_Page_For_The_Order(
+        PizzaSpecial pizzaSpecial, Address deliveryAddress)
+    {
+        // Arrange        
+        var order = CreatePizzaSpecialOrder(pizzaSpecial, deliveryAddress);
+        var navigationManager = Services.GetRequiredService<FakeNavigationManager>();
+        var cut = Render(@<Checkout/>);
+
+        // Act
+        PlaceOrder(cut);
+    
+        // Assertion
+        navigationManager.Uri
+            .Should()
+            .Be($"{navigationManager.BaseUri}myorders/{order.OrderId}");
+    }   
+       
+    [Theory, AutoData]
+    public void When_PlaceOrderButton_Is_Clicked_The_Button_Is_Disabled_Until_The_PlaceOrder_Api_Call_Returns(
+        PizzaSpecial pizzaToOrder, Address deliveryAddress)
+    {
+        Services.AddSingleton<IPizzaApi, LoadingForeverPizzaApi>();
+        CreatePizzaSpecialOrder(pizzaToOrder, deliveryAddress);
+        var cut = Render(@<Checkout/>);
+        
+        PlaceOrder(cut);
+
+        cut.Find(".checkout-button")
+            .Attributes
+            .Should()
+            .Contain(x => x.Name == "disabled");
+    }
+    
+    [Theory, AutoData]
+    public void When_PlaceOrder_Api_Call_Returns_PlaceOrderButton_Is_Enabled(
+        PizzaSpecial pizzaToOrder, Address deliveryAddress)
+    {
+        CreatePizzaSpecialOrder(pizzaToOrder, deliveryAddress);
+        var cut = Render(@<Checkout/>);
+        
+        PlaceOrder(cut);
+
+        cut.WaitForAssertion(() =>
+            cut.Find(".checkout-button")
+                .Attributes
+                .Should()
+                .NotContain(x => x.Name == "disabled"));
+    }
+
+    [Theory, AutoData]
+    public void When_PlaceOrder_Api_Throws_AccessTokenNotAvailableException_Users_Are_Redirected_To_Login_Page(
+        PizzaSpecial pizzaToOrder, Address deliveryAddress)
+    {
+        Services.AddSingleton<IPizzaApi, MissingAccessTokenPizzaApi>();
+        var navMan = Services.GetRequiredService<NavigationManager>();
+        CreatePizzaSpecialOrder(pizzaToOrder, deliveryAddress);
+        var cut = Render(@<Checkout/>
+    );
+        
+        PlaceOrder(cut);
+
+        navMan.Uri
+            .Should()
+            .Be($"{navMan.BaseUri}authentication/login");
+    }
+
+    [Fact]
+    public void CheckoutPage_Requires_User_To_Be_Authorized()
+    {
+        var cut = RenderComponent<Checkout>();
+
+        cut.Instance
+            .GetType()
+            .GetCustomAttributes(typeof(AuthorizeAttribute), inherit: false)
+            .Should()
+            .NotBeEmpty();
+    }
+
+    private Order CreatePizzaSpecialOrder(PizzaSpecial pizzaSpecial, Address deliveryAddress)
+    {
+        var orderState = Services.GetRequiredService<OrderState>();
+        orderState.ShowConfigurePizzaDialog(pizzaSpecial);
+        orderState.ConfirmConfigurePizzaDialog();
+        orderState.Order.DeliveryAddress = deliveryAddress;
+        return orderState.Order;
+    }
+
+    private void PlaceOrder(IRenderedFragment cut)
+    {
+        cut.Find("form").Submit();
+    }
+
+    private async Task VerifyApiHasReceivedOrderAsync(Order expectedOrder)
+    {
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        var ordersWithStatus = await api.GetOrdersAsync();
+        ordersWithStatus.Should().HaveCount(1);
+        ordersWithStatus[0]
+            .Order
+            .Should()
+            .Be(expectedOrder);
+    }
+
+    private async Task VerifyApiHasNotReceivedAnyOrdersAsync()
+    {
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        var ordersWithStatus = await api.GetOrdersAsync();
+        ordersWithStatus.Should().HaveCount(0);
+    }
+}

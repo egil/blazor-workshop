@@ -1,0 +1,60 @@
+﻿@inherits TestContext
+@code
+{    
+    public MyOrdersTests()
+    {
+        this.AddBlazingPizzaSupport();        
+    }
+
+    [Fact]
+    public void When_PizzaAPI_Hasnt_Returned_OrdersWithStatus_A_Loading_Message_Is_Displayed()
+    {
+        Services.AddSingleton<IPizzaApi, LoadingForeverPizzaApi>();
+        
+        var cut = Render(@<MyOrders/>);
+        
+        cut.MarkupMatches(@<div class="main">Loading...</div>);
+    }
+
+    [Fact]
+    public void When_PizzaAPI_Returns_Empty_OrdersWithStatus_A_NoOrders_Message_Is_Displayed()
+    {       
+        var cut = Render(@<MyOrders/>);
+        
+        cut.MarkupMatches(
+            @<div class="main">
+                <h2>No orders placed</h2>    
+                <a class="btn btn-success" href="">Order some pizza</a>
+            </div>);
+    }
+
+    [Theory, AutoData]
+    public async Task When_PizzaAPI_Returns_OrdersWithStatus_The_OrdersTable_Component_Is_Rendered_With_The_Orders(
+        Order order)
+    {        
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        await api.PlaceOrderAsync(order);
+        var ordersWithStatus = await api.GetOrdersAsync();
+        
+        var cut = Render(@<MyOrders/>);
+
+        cut.FindComponent<OrdersTable>()
+            .Instance
+            .Orders
+            .Should()
+            .BeEquivalentTo(ordersWithStatus);
+    }
+
+    [Fact]
+    public void When_GetOrdersAsync_Api_Throws_AccessTokenNotAvailableException_Users_Are_Redirected_To_Login_Page()
+    {
+        Services.AddSingleton<IPizzaApi, MissingAccessTokenPizzaApi>();
+        var navMan = Services.GetRequiredService<NavigationManager>();
+
+        var cut = Render(@<MyOrders/>);        
+
+        navMan.Uri
+            .Should()
+            .Be($"{navMan.BaseUri}authentication/login");
+    }
+}

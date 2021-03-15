@@ -1,12 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>annotations</Nullable>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazingPizza.Shared\BlazingPizza.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

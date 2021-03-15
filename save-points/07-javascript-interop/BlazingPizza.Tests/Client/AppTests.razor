@@ -1,0 +1,50 @@
+﻿@inherits TestContext
+@code {
+    public AppTests()
+    {
+        this.AddBlazingPizzaSupport();        
+    }
+
+    [Theory, AutoData]
+    public void When_Page_Url_Is_Unknown_Then_Expected_NotFound_Content_Is_Displayed(
+        string randomUri)
+    {
+        var navMan = Services.GetRequiredService<NavigationManager>();
+        navMan.NavigateTo($"/{randomUri}");
+        
+        var cut = Render(@<App />);
+
+        cut.Find(".main")
+            .MarkupMatches(@<div class="main">Sorry, there's nothing at this address.</div>);
+    }
+
+    [Theory]
+    [InlineData("myorders")]
+    [InlineData("checkout")]   
+    public void When_User_Is_Unauthorized_And_Visiting_A_Protected_Page_Then_They_Are_Redirected_To_Login_Page(
+        string protectedPage)
+    {
+        var navMan = Services.GetRequiredService<NavigationManager>();
+        navMan.NavigateTo(protectedPage);
+        
+        var cut = Render(@<App />);
+
+        navMan.Uri
+            .Should()
+            .Be($"{navMan.BaseUri}authentication/login?returnUrl={navMan.BaseUri}{protectedPage}");
+    }
+
+    [Fact]
+    public void When_User_Is_Authorizing_And_Visiting_A_Protected_Page_Then_PleaseWait_Text_Is_Displayed()
+    {
+        var authCtx = Services.GetRequiredService<TestAuthorizationContext>();
+        authCtx.SetAuthorizing();
+        var navMan = Services.GetRequiredService<NavigationManager>();
+        navMan.NavigateTo("checkout");
+
+        var cut = Render(@<App />);
+
+        cut.Find(".main")
+            .MarkupMatches(@<div class="main">Please wait...</div>);
+    }
+}

@@ -46,7 +46,7 @@ namespace BlazingPizza.Server
                 .Include(o => o.Pizzas).ThenInclude(p => p.Toppings).ThenInclude(t => t.Topping)
                 .SingleOrDefaultAsync();
 
-            if (order == null)
+            if (order is null)
             {
                 return NotFound();
             }

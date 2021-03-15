@@ -1,0 +1,33 @@
+﻿@inherits TestContext
+@code {
+    public MainLayoutTests()
+    {
+        this.AddBlazingPizzaSupport();
+    }
+
+    [Fact]
+    public void MyOrdersNavigationItem_Is_Marked_As_Active_When_Viewing_MyOrdersPage()
+    {
+        Services.GetRequiredService<TestAuthorizationContext>().SetAuthorized("USERNAME");
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+
+        var cut = Render(@<MainLayout />);
+
+        navigationManager.NavigateTo("myorders");
+
+        cut.Find("a[href=myorders]")
+            .ClassList
+            .Should()
+            .Contain("active");
+    }
+
+    [Fact]
+    public void When_User_Is_Unauthorized_Then_MyOrders_Link_Is_Not_Displayed()
+    {
+        var cut = Render(@<MainLayout />);
+
+        cut.FindAll("a[href=myorders]")
+            .Should()
+            .BeEmpty();
+    }
+}
