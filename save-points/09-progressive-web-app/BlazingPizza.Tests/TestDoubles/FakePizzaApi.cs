@@ -19,9 +19,10 @@ namespace BlazingPizza
         private TaskCompletionSource<OrderWithStatus> orderStatusUpdated = new();
         private readonly List<Topping> toppings;
         private readonly List<PizzaSpecial> pizzaSpecials;
-        private readonly List<Order> orders = new List<Order>();
-        private readonly List<OrderWithStatus> orderWithStatuses = new List<OrderWithStatus>();
+        private readonly List<Order> orders = new();
+        private readonly List<OrderWithStatus> orderWithStatuses = new();
         private readonly TestAuthorizationContext? fakeAuth;
+        private readonly List<NotificationSubscription> subscriptions = new();
 
         public FakePizzaApi(TestAuthorizationContext fakeAuth = null,
                             IEnumerable<Topping>? toppings = null,
@@ -142,5 +143,14 @@ namespace BlazingPizza
                 throw new ArgumentException(message, nameof(parameters));
             }
         }
+
+        public Task SubscribeToNotifications(NotificationSubscription subscription)
+        {
+            subscriptions.Add(subscription);
+            return Task.CompletedTask;
+        }
+
+        internal IReadOnlyList<NotificationSubscription> GetNotificationSubscriptions()
+            => subscriptions;
     }
 }

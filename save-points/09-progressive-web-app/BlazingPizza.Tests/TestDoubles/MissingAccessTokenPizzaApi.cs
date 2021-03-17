@@ -53,5 +53,10 @@ namespace BlazingPizza
         {
             throw accessTokenNotAvailableException;
         }
+
+        public Task SubscribeToNotifications(NotificationSubscription subscription)
+        {
+            throw accessTokenNotAvailableException;
+        }
     }
 }

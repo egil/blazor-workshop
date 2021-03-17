@@ -52,5 +52,11 @@ namespace BlazingPizza.Client.Services
                 await Task.Delay(4000, cancellationToken);
             }
         }
+
+        public async Task SubscribeToNotifications(NotificationSubscription subscription)
+        {
+            var response = await authedHttpClient.PutAsJsonAsync("notifications/subscribe", subscription);
+            response.EnsureSuccessStatusCode();
+        }
     }
 }

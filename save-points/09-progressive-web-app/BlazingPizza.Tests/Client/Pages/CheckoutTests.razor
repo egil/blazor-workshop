@@ -134,6 +134,32 @@
             .NotBeEmpty();
     }
 
+    [Fact]
+    public void CheckoutPage_Asks_Users_If_They_Want_Notifications_During_Initialization()
+    {
+        var cut = RenderComponent<Checkout>();
+
+        JSInterop.VerifyInvoke("blazorPushNotifications.requestSubscription");
+    }
+
+    [Theory, AutoData]
+    public void When_User_Accepts_Notifications_Then_Notification_Data_Is_Passed_To_Api(
+        NotificationSubscription subscription)
+    {
+        JSInterop.Setup<NotificationSubscription>("blazorPushNotifications.requestSubscription")
+            .SetResult(subscription);
+
+        var cut = RenderComponent<Checkout>();
+
+        Services.GetRequiredService<FakePizzaApi>()
+            .GetNotificationSubscriptions()
+            .Should()
+            .ContainSingle()
+            .Which
+            .Should()
+            .Be(subscription);                
+    }
+
     private Order CreatePizzaSpecialOrder(PizzaSpecial pizzaSpecial, Address deliveryAddress)
     {
         var orderState = Services.GetRequiredService<OrderState>();

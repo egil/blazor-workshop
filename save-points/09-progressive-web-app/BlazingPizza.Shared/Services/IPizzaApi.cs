@@ -15,5 +15,6 @@ namespace BlazingPizza.Client.Services
         Task<OrderWithStatus> GetOrderAsync(int orderId);
         Task<int> PlaceOrderAsync(Order order);
         IAsyncEnumerable<OrderWithStatus> GetOrderUpdatesById(int orderId, CancellationToken cancellationToken = default);
+        Task SubscribeToNotifications(NotificationSubscription subscription);
     }
 }

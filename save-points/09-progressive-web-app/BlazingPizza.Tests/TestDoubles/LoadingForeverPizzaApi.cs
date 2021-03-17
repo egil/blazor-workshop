@@ -51,5 +51,10 @@ namespace BlazingPizza
             await loadTask.Task;
             return 0;
         }
+
+        public async Task SubscribeToNotifications(NotificationSubscription subscription)
+        {
+            await loadTask.Task;
+        }
     }
 }
