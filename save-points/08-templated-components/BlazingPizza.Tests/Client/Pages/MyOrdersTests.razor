@@ -29,7 +29,7 @@
     }
 
     [Theory, AutoData]
-    public async Task When_PizzaAPI_Returns_OrdersWithStatus_The_OrdersTable_Component_Is_Rendered_With_The_Orders(
+    public async Task When_PizzaAPI_Returns_OrdersWithStatus_The_OrderItem_Component_Is_Used_To_Render_Each_Order(
         Order order)
     {        
         var api = Services.GetRequiredService<FakePizzaApi>();
@@ -38,9 +38,8 @@
         
         var cut = Render(@<MyOrders/>);
 
-        cut.FindComponent<OrdersTable>()
-            .Instance
-            .Orders
+        cut.FindComponents<OrderItem>()
+            .Select(x => x.Instance.Item)
             .Should()
             .BeEquivalentTo(ordersWithStatus);
     }
@@ -51,7 +50,8 @@
         Services.AddSingleton<IPizzaApi, MissingAccessTokenPizzaApi>();
         var navMan = Services.GetRequiredService<NavigationManager>();
 
-        var cut = Render(@<MyOrders/>);        
+        var cut = Render(
+    @<MyOrders/>);        
 
         navMan.Uri
             .Should()

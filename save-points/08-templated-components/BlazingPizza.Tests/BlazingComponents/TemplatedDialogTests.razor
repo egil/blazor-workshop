@@ -1,0 +1,24 @@
+﻿@inherits TestContext
+@code {
+
+    [Fact]
+    public void When_Show_Is_False_Then_No_Markup_Is_Rendered()
+    {
+        var cut = Render(@<TemplatedDialog Show="false" />);
+
+        cut.MarkupMatches("");
+    }
+    
+    [Theory, AutoData]
+    public void When_Show_Is_True_Then_ChildContent_Is_Rendered(string content)
+    {
+        var cut = Render(@<TemplatedDialog Show="true">@content</TemplatedDialog>);
+
+        cut.MarkupMatches(
+            @<div class="dialog-container">
+                 <div class="dialog">
+                     @content
+                 </div>
+             </div>);
+    }    
+}

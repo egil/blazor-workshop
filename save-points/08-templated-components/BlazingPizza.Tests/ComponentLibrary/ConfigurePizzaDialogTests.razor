@@ -11,22 +11,20 @@
         var cut = Render(@<ConfigurePizzaDialog Pizza="pizza"/>);
         
         cut.MarkupMatches(
-            @<div class="dialog-container">
-                 <div class="dialog">
-                     <div class="dialog-title">
-                        <h2>@pizza.Special.Name</h2>
-                        @pizza.Special.Description
-                     </div>
-                     <form diff:ignore></form>
-                     <div class="dialog-buttons">
-                         <button class="btn-cancel btn btn-secondary mr-auto">Cancel</button>
-                         <span class="mr-center">
-                             Price: <span class="price">@pizza.GetFormattedTotalPrice()</span>
-                         </span>
-                         <button class="btn-confirm btn btn-success ml-auto">Order ></button>
-                     </div>
+            @<text>
+                 <div class="dialog-title">
+                     <h2>@pizza.Special.Name</h2>
+                     @pizza.Special.Description
                  </div>
-             </div>);
+                 <form diff:ignore></form>
+                 <div class="dialog-buttons">
+                     <button class="btn-cancel btn btn-secondary mr-auto">Cancel</button>
+                     <span class="mr-center">
+                         Price: <span class="price">@pizza.GetFormattedTotalPrice()</span>
+                     </span>
+                     <button class="btn-confirm btn btn-success ml-auto">Order ></button>
+                 </div>
+             </text>);
     }
 
     [Theory, AutoData]
