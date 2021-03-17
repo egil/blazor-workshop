@@ -1,0 +1,64 @@
+﻿@inherits TestContext
+@code {
+    [Fact]
+    public void When_Loader_Hasnt_Completed_Then_The_Loading_Fragment_Is_Rendered()
+    {
+        var incompletedTsc = new TaskCompletionSource<IEnumerable<string>>();
+        var expectedMarkup = "LOADING";
+
+        var cut = Render(
+            @<TemplatedList Loader="() => incompletedTsc.Task">
+                <Loading>@expectedMarkup</Loading>
+            </TemplatedList>);
+
+        cut.MarkupMatches(expectedMarkup);
+    }
+
+    [Fact]
+    public void When_Loader_Has_Returned_Empty_Collection_Then_The_Empty_Fragment_Is_Rendered()
+    {
+        var completedTask = Task.FromResult<IEnumerable<string>>(Array.Empty<string>());
+        var expectedMarkup = "EMPTY";
+
+        var cut = Render(
+            @<TemplatedList Loader="() => completedTask">
+                <Empty>@expectedMarkup</Empty>
+            </TemplatedList>);
+
+        cut.MarkupMatches(expectedMarkup);
+    }
+
+    [Theory, AutoData]
+    public void When_Loader_Has_Returned_Items_Then_The_Item_Fragment_Is_Rendered_Once_Per_Item(
+        List<string> data)
+    {
+        var completedTask = Task.FromResult<IEnumerable<string>>(data);
+
+        var cut = Render(
+            @<TemplatedList Loader="() => completedTask">
+                <Item>
+                    <p>@context</p>
+                </Item>
+            </TemplatedList>);
+
+        cut.FindAll(".list-group > .list-group-item > p")
+            .Select(x => x.TextContent)
+            .Should()
+            .BeEquivalentTo(data);
+    }
+
+    [Theory, AutoData]
+    public void When_ListGroulpClass_Is_Provided_Then_It_Is_Added_As_To_The_ListGroup_Div_ClassList(
+        List<string> data,
+        string listGroupClass)
+    {
+        var completedTask = Task.FromResult<IEnumerable<string>>(data);
+        
+        var cut = Render(@<TemplatedList Loader="() => completedTask" ListGroupClass=@listGroupClass />);
+
+        cut.Find(".list-group")
+            .ClassList
+            .Should()
+            .Contain(listGroupClass);
+    }
+}

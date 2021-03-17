@@ -1,0 +1,29 @@
+﻿@inherits TestContext
+@code 
+{
+    [Theory, AutoData]
+    public void OrderItem_Correctly_Renders_Order_Passed_To_It(
+        OrderWithStatus item)
+    {
+        var cut = Render(@<OrderItem Item=item />);
+
+        cut.MarkupMatches(
+            @<text>
+                <div class="col">
+                    <h5>@item.Order.CreatedTime.ToLongDateString()</h5>
+                    Items:
+                    <strong>@item.Order.Pizzas.Count()</strong>;
+                    Total price:
+                    <strong>£@item.Order.GetFormattedTotalPrice()</strong>
+                </div>
+                <div class="col">
+                    Status: <strong>@item.StatusText</strong>
+                </div>
+                <div class="col flex-grow-0">
+                    <a href="myorders/@item.Order.OrderId" class="btn btn-success">
+                        Track &gt;
+                    </a>
+                </div>
+            </text>);
+    }
+}

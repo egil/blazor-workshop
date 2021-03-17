@@ -1,0 +1,12 @@
+﻿<li @onclick="() => OnClick.InvokeAsync(Special)" style="background-image: url('@Special.ImageUrl')">
+    <div class="pizza-info">
+        <span class="title">@Special.Name</span>
+        @Special.Description
+        <span class="price">@Special.GetFormattedBasePrice()</span>
+    </div>
+</li>
+
+@code {
+    [Parameter] public PizzaSpecial Special { get; set; }
+    [Parameter] public EventCallback<PizzaSpecial> OnClick { get; set; }
+} 

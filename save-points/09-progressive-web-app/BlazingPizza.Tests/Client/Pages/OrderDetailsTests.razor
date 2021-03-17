@@ -1,0 +1,88 @@
+﻿@inherits TestContext
+@code
+{
+    public OrderDetailsTests()
+    {
+        this.AddBlazingPizzaSupport();
+        JSInterop.SetupVoid("deliveryMap.showOrUpdate", _ => true);
+    }
+
+    [Fact]
+    public void When_API_Hasnt_Returned_A_OrderWithDetail_The_Loading_Message_Is_Displayed()
+    {
+        Services.AddSingleton<IPizzaApi, LoadingForeverPizzaApi>();
+
+        var cut = Render(@<OrderDetails OrderId="1234" />);
+
+        cut.MarkupMatches(@<div class="main">Loading...</div>);
+    }
+
+    [Fact]
+    public void When_API_Returns_An_InvalidOrder_An_Invalid_Order_Message_Is_Displayed()
+    {
+        var cut = Render(@<OrderDetails OrderId="1234" />);
+
+        cut.MarkupMatches(
+            @<div class="main">
+                <h2>Nope</h2>
+                <p>Sorry, this order could not be loaded.</p>    
+             </div>);
+    }
+
+    [Theory, AutoData]
+    public async Task When_API_Returns_An_Order_A_OrderTracker_Is_Displayed(Order order)
+    {
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        var orderId = await api.PlaceOrderAsync(order);
+        var orderWithStatus = await api.GetOrderWithStatusById(orderId);
+
+        var cut = Render(@<OrderDetails OrderId=orderId />);
+
+        cut.MarkupMatches(
+            @<div class="main">
+                <div class="track-order">
+                    <div class="track-order-title">
+                        <h2>
+                            Order placed @orderWithStatus.Order.CreatedTime.ToLongDateString()
+                        </h2>
+                        <p class="ml-auto mb-0">
+                            Status: <strong>@orderWithStatus.StatusText</strong>
+                        </p>
+                    </div>
+                    <div class="track-order-body" >
+                        <div class="track-order-details" diff:ignore></div>
+                        <div class="track-order-map" diff:ignore></div>
+                    </div>
+                </div> 
+             </div>);
+    }
+
+    [Theory, AutoData]
+    public async Task When_API_Returns_Updates_To_Order_The_OrderTracker_Is_Updated(Order newOrder)
+    {        
+        var api = Services.GetRequiredService<FakePizzaApi>();
+        var orderId = await api.PlaceOrderAsync(newOrder);
+        var cut = Render(@<OrderDetails OrderId=orderId />);
+        var statusElement = cut.Find(".track-order p");
+
+        // act
+        api.SetOrderStatusAsDelivered(orderId);
+
+        // assert
+        cut.WaitForAssertion(() => statusElement.TextContent.MarkupMatches($"Status: Delivered"));
+    }
+
+    
+    [Fact]
+    public void When_GetOrderUpdatesById_Api_Throws_AccessTokenNotAvailableException_Users_Are_Redirected_To_Login_Page()
+    {
+        Services.AddSingleton<IPizzaApi, MissingAccessTokenPizzaApi>();
+        var navMan = Services.GetRequiredService<NavigationManager>();
+
+        var cut = Render(@<OrderDetails OrderId="1234" />);
+
+        navMan.Uri
+            .Should()
+            .Be($"{navMan.BaseUri}authentication/login");
+    }
+}
