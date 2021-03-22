@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace BlazingPizza
+﻿namespace BlazingPizza
 {
     public class NotificationSubscription
     {

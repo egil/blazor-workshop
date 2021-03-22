@@ -4,7 +4,7 @@
 <div class="user-info">
     <AuthorizeView>
         <Authorizing>
-            <text>...</text>
+            ...
         </Authorizing>
         <Authorized>
             <img src="img/user.svg" />
@@ -20,7 +20,7 @@
     </AuthorizeView>
 </div>
 
-@code{
+@code {
     async Task BeginSignOut()
     {
         await SignOutManager.SetSignOutState();

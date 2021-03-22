@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+﻿using BlazingPizza.Client.Services;
+using BlazingPizza.Services;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -14,9 +16,17 @@ namespace BlazingPizza.Client
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-            builder.Services.AddHttpClient<OrdersClient>(client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
-                .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+            builder.Services.AddHttpClient(
+                PizzaApi.AuthenticatedClientName,                
+                client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+            ).AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+
+            builder.Services.AddHttpClient(
+                PizzaApi.UnauthenticatedClientName,
+                client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+            );
+
+            builder.Services.AddScoped<IPizzaApi, PizzaApi>();
             builder.Services.AddScoped<OrderState>();
 
             // Add auth services
@@ -24,6 +34,10 @@ namespace BlazingPizza.Client
             {
                 options.AuthenticationPaths.LogOutSucceededPath = "";
             });
+
+            builder.Services.AddSingleton<IAuthenticationViewComponentTypeProvider>(
+                new AuthenticationViewComponentTypeProvider(
+                    typeof(RemoteAuthenticatorViewCore<PizzaAuthenticationState>)));
 
             await builder.Build().RunAsync();
         }

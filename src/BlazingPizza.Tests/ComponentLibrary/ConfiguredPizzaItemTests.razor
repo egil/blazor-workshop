@@ -1,0 +1,37 @@
+﻿@inherits TestContext
+@code {
+    [Theory, AutoData]
+    public void Dialog_Correctly_Lists_The_Pizza_Passed_To_It(Pizza pizza)
+    {
+        var cut = Render(@<ConfiguredPizzaItem Pizza="pizza"/>);
+
+        cut.MarkupMatches(
+            @<div class="cart-item">
+                <a class="delete-item">x</a>
+                <div class="title">@(pizza.Size)" @pizza.Special.Name</div>
+                <ul>
+                @foreach (var topping in pizza.Toppings)
+                {
+                    <li>+ @topping.Topping.Name</li>
+                }
+                </ul>
+                <div class="item-price">
+                    @pizza.GetFormattedTotalPrice()
+                </div>
+            </div>
+    );
+    }
+
+    [Theory, AutoData]
+    public void When_Remove_Link_Is_Clicked_The_OnRemoved_Event_Is_Raised(Pizza pizza)
+    {
+        var onRemovedRaised = false;
+        var cut = Render(@<ConfiguredPizzaItem Pizza="pizza" OnRemoved="() => onRemovedRaised = true" />);
+
+        cut.Find(".delete-item").Click();
+
+        onRemovedRaised
+            .Should()
+            .BeTrue();
+    }
+}

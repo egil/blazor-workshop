@@ -1,4 +1,4 @@
-﻿namespace BlazingPizza.ComponentsLibrary.Map
+﻿namespace BlazingPizza.Maps
 {
     public class Point
     {

@@ -1,0 +1,14 @@
+﻿@inherits TestContext
+@code 
+{
+    [Theory, AutoData]
+    public void OrderView_Lists_All_Toppings_In_Per_Pizza(Order order)
+    {
+        var totalTopping = order.Pizzas.SelectMany(x=>x.Toppings).Count();
+        var cut = Render(@<OrderReview Order=order />);
+
+        var toppings = cut.FindAll("ul li");
+
+        toppings.Should().HaveCount(totalTopping);
+    }
+}

@@ -48,7 +48,7 @@ namespace BlazingPizza.Server
                 .Include(o => o.Pizzas).ThenInclude(p => p.Toppings).ThenInclude(t => t.Topping)
                 .SingleOrDefaultAsync();
 
-            if (order == null)
+            if (order is null)
             {
                 return NotFound();
             }
@@ -117,6 +117,7 @@ namespace BlazingPizza.Server
             var pushSubscription = new PushSubscription(subscription.Url, subscription.P256dh, subscription.Auth);
             var vapidDetails = new VapidDetails("mailto:<someone@example.com>", publicKey, privateKey);
             var webPushClient = new WebPushClient();
+
             try
             {
                 var payload = JsonSerializer.Serialize(new
