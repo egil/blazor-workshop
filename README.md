@@ -6,6 +6,8 @@ What is Blazor? Blazor is a single-page app framework for building client-side w
 
 This version of the workshop uses **[bUnit](https://bunit.egilhansen.com/)** test create tests for each part of the app while building it. To learn how, see the related video series on YouTube: http://bit.ly/tdd-blazing-pizza-workshop
 
+**NOTE:** The docs for the sessions has not been updated with the testing steps. Watch the videos for to see how the tests were made.
+
 ![Blazing Pizza](https://user-images.githubusercontent.com/1874516/77244515-c889ce00-6bd2-11ea-9a45-47452c084464.png)
 
 ## Getting Started
