@@ -13,17 +13,16 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="AutoFixture" Version="4.15.0" />
     <PackageReference Include="AutoFixture.Xunit2" Version="4.15.0" />
-    <PackageReference Include="bunit.core" Version="1.0.0-preview-02-g4f37ca4a0e" />
-    <PackageReference Include="bunit.web" Version="1.0.0-preview-02-g4f37ca4a0e" />
-    <PackageReference Include="bunit.xunit" Version="1.0.0-preview-02-g4f37ca4a0e" />
+    <PackageReference Include="bunit.core" Version="1.0.0-preview-02" />
+    <PackageReference Include="bunit.web" Version="1.0.0-preview-02" />
     <PackageReference Include="FluentAssertions" Version="5.10.3" />    
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="3.0.2">
+    <PackageReference Include="coverlet.collector" Version="3.0.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
