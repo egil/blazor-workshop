@@ -31,8 +31,6 @@ namespace BlazingPizza
 
             context.Services.AddSingleton<FakePizzaApi>(new FakePizzaApi(fakeAuth));
             context.Services.AddSingleton<IPizzaApi>(s => s.GetRequiredService<FakePizzaApi>());
-            context.Services.AddSingleton<FakeNavigationManager>();
-            context.Services.AddSingleton<NavigationManager>(s => s.GetRequiredService<FakeNavigationManager>());
             context.Services.AddSingleton<OrderState>();
 
             context.Services.AddSingleton<INavigationInterception, DummyNavigationInterception>();

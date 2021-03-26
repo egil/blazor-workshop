@@ -61,7 +61,7 @@
     {
         // Arrange        
         var order = CreatePizzaSpecialOrder(pizzaSpecial, deliveryAddress);
-        var navigationManager = Services.GetRequiredService<FakeNavigationManager>();
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
         var cut = Render(@<Checkout/>);
 
         // Act

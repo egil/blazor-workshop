@@ -80,7 +80,7 @@
     public async Task When_Order_Is_Placed_Then_The_App_Should_Navigate_To_MyOrders_Page_For_The_Order()
     {
         // Arrange        
-        var navigationManager = Services.GetRequiredService<FakeNavigationManager>();
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
         var cut = Render(@<Index />);
         
         // Act

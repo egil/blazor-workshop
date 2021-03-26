@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Nullable>annotations</Nullable>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(BlazorVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="$(BlazorVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsVersion)" />
     <PackageReference Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonVersion)" />
   </ItemGroup>
 
